@@ -128,6 +128,44 @@ nav{padding:16px 32px;display:flex;align-items:center;justify-content:space-betw
 .empty-icon{font-size:36px;margin-bottom:10px;}
 .empty-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;}
 
+/* RISK */
+.risk-score-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.risk-dial{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;flex-shrink:0;border:3px solid;}
+.risk-dial.safe{border-color:var(--ok);background:rgba(34,197,94,0.08);}
+.risk-dial.medium{border-color:var(--amber);background:rgba(245,158,11,0.08);}
+.risk-dial.high{border-color:var(--danger);background:rgba(239,68,68,0.08);}
+.risk-score-num{font-family:'DM Serif Display',serif;font-size:26px;line-height:1;}
+.risk-score-num.safe{color:var(--ok);}
+.risk-score-num.medium{color:var(--amber);}
+.risk-score-num.high{color:var(--danger);}
+.risk-score-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.risk-score-body{flex:1;}
+.risk-score-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);margin-bottom:4px;}
+.risk-score-sub{font-size:13px;color:var(--muted);line-height:1.6;}
+.approval-list{display:flex;flex-direction:column;gap:6px;}
+.approval-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;transition:all 0.15s;}
+.approval-card:hover{background:var(--surface2);}
+.approval-card.risk-high{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.04);}
+.approval-card.risk-medium{border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.03);}
+.approval-card.risk-safe{border-color:rgba(34,197,94,0.2);}
+.approval-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.approval-token{font-size:14px;font-weight:600;color:var(--text);}
+.approval-risk-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:0.5px;text-transform:uppercase;}
+.badge-high{background:rgba(239,68,68,0.15);color:var(--danger);}
+.badge-medium{background:rgba(245,158,11,0.15);color:var(--amber);}
+.badge-safe{background:rgba(34,197,94,0.12);color:var(--ok);}
+.approval-detail{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.approval-detail-item{font-size:12px;}
+.approval-detail-label{color:var(--muted);margin-bottom:2px;}
+.approval-detail-val{color:var(--text);font-weight:500;font-family:monospace;font-size:11px;word-break:break-all;}
+.approval-detail-val.unlimited{color:var(--danger);font-weight:700;font-family:'DM Sans',sans-serif;}
+.approval-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.revoke-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:12px;font-weight:600;color:var(--danger);text-decoration:none;transition:all 0.15s;cursor:pointer;}
+.revoke-btn:hover{background:var(--danger);color:white;}
+.view-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted);text-decoration:none;transition:all 0.15s;}
+.view-btn:hover{border-color:var(--amber);color:var(--amber);}
+.risk-tip{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);border-radius:10px;padding:14px 16px;font-size:13px;color:#93C5FD;line-height:1.65;margin-bottom:16px;}
+
 footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .footer-brand{font-family:'DM Serif Display',serif;font-size:15px;color:var(--amber);}
 .footer-note{font-size:11px;color:var(--dim);}
@@ -209,11 +247,13 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
     <div class="tab active" onclick="switchTab('tokens',this)">Tokens <span class="tab-badge" id="tbTokens">0</span></div>
     <div class="tab" onclick="switchTab('nfts',this)">NFTs <span class="tab-badge" id="tbNFTs">0</span></div>
     <div class="tab" onclick="switchTab('txs',this)">Transactions <span class="tab-badge" id="tbTxs">0</span></div>
+    <div class="tab" onclick="switchTab('risk',this)">Risk Scan <span class="tab-badge" id="tbRisk" style="background:rgba(239,68,68,0.15);color:var(--danger);">—</span></div>
   </div>
 
   <div class="tab-content active" id="tab-tokens"></div>
   <div class="tab-content" id="tab-nfts"></div>
   <div class="tab-content" id="tab-txs"></div>
+  <div class="tab-content" id="tab-risk"></div>
 </div>
 
 <footer>
@@ -279,6 +319,7 @@ async function lookup(addr) {
     document.getElementById('portState').style.display = 'block';
 
     showSkeletons();
+    document.getElementById('tab-risk').innerHTML = '';
     setProgress(15);
 
     // Fetch prices and native balance immediately (fast)
@@ -573,12 +614,263 @@ function showSkeletons() {
   });
 }
 
+// ── RISK SCAN ─────────────────────────────────────────────────────────
+
+// Known safe protocols (lowercase)
+var KNOWN_SAFE = {
+  '0x000000000022d473030f116ddee9f6b43ac78ba3': 'Uniswap Permit2',
+  '0xe592427a0aece92de3edee1f18e0157c05861564': 'Uniswap V3 Router',
+  '0x7a250d5630b4cf539739df2c5dacb4c659f2488d': 'Uniswap V2 Router',
+  '0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f': 'SushiSwap Router',
+  '0x1111111254eeb25477b68fb85ed929f73a960582': '1inch V5',
+  '0x1111111254fb6c44bac0bed2854e76f90643097d': '1inch V4',
+  '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45': 'Uniswap V3 Router2',
+  '0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b': 'Uniswap Universal Router',
+  '0x00000000219ab540356cbb839cbe05303d7705fa': 'ETH2 Deposit',
+  '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9': 'Aave Token',
+  '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b': 'Compound Comptroller',
+};
+
+async function runRiskScan(address) {
+  document.getElementById('tab-risk').innerHTML = `
+    <div style="padding:8px 0;">
+      ${Array(4).fill('<div class="sk" style="height:120px;margin-bottom:8px;border-radius:12px;"></div>').join('')}
+    </div>`;
+
+  try {
+    var c = CHAINS[chain];
+
+    // Fetch ERC-20 approval logs (Transfer topic for approvals)
+    // Use alchemy_getAssetTransfers won't get approvals - we need getLogs
+    var approvalTopic = '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925';
+    var nftApprovalTopic = '0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31';
+
+    var [erc20Logs, nftLogs] = await Promise.all([
+      rpcLogs({
+        fromBlock: '0x0',
+        toBlock: 'latest',
+        topics: [approvalTopic, null, null],
+        address: null
+      }, address, true),
+      rpcLogs({
+        fromBlock: '0x0',
+        toBlock: 'latest',
+        topics: [nftApprovalTopic, '0x000000000000000000000000'+address.slice(2).toLowerCase()],
+        address: null
+      }, address, false)
+    ]);
+
+    var approvals = parseApprovals(erc20Logs, address);
+    var nftApprovals = parseNFTApprovals(nftLogs, address);
+    var all = [...approvals, ...nftApprovals];
+
+    renderRisk(all, address);
+
+  } catch(e) {
+    document.getElementById('tab-risk').innerHTML = `
+      <div class="risk-tip">Unable to fetch approval history: ${e.message||'Network error'}. Try again or check your Alchemy key supports getLogs.</div>
+      ${renderRiskFallback(address)}`;
+  }
+}
+
+async function rpcLogs(filter, address, isOwnerFilter) {
+  try {
+    // Get logs where address is the owner (indexed param 1)
+    var ownerPadded = '0x000000000000000000000000' + address.slice(2).toLowerCase();
+    var topics = isOwnerFilter
+      ? ['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925', ownerPadded, null]
+      : filter.topics;
+
+    var result = await rpc('eth_getLogs', [{
+      fromBlock: 'earliest',
+      toBlock: 'latest',
+      topics: topics
+    }]);
+    return result || [];
+  } catch { return []; }
+}
+
+function parseApprovals(logs, address) {
+  var seen = {};
+  var approvals = [];
+  // Process newest first so we get the latest approval per (token, spender)
+  var reversed = [...logs].reverse();
+  for (var log of reversed) {
+    if (!log.topics || log.topics.length < 3) continue;
+    var spender = '0x' + log.topics[2].slice(26).toLowerCase();
+    var token = log.address.toLowerCase();
+    var key = token + '_' + spender;
+    if (seen[key]) continue;
+    seen[key] = true;
+    var amount = log.data && log.data !== '0x'
+      ? BigInt('0x' + log.data.slice(2).padStart(64,'0'))
+      : BigInt(0);
+    if (amount === BigInt(0)) continue; // already revoked
+    approvals.push({
+      type: 'ERC20',
+      token,
+      spender,
+      amount,
+      isUnlimited: amount >= BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff') / BigInt(2),
+      blockNumber: parseInt(log.blockNumber, 16)
+    });
+  }
+  return approvals;
+}
+
+function parseNFTApprovals(logs, address) {
+  var seen = {};
+  var approvals = [];
+  for (var log of logs) {
+    if (!log.topics || log.topics.length < 3) continue;
+    var spender = '0x' + log.topics[2].slice(26).toLowerCase();
+    var token = log.address.toLowerCase();
+    var key = token + '_' + spender;
+    if (seen[key]) continue;
+    seen[key] = true;
+    // Check if approved (data = true = 1)
+    var approved = log.data === '0x0000000000000000000000000000000000000000000000000000000000000001';
+    if (!approved) continue;
+    approvals.push({
+      type: 'NFT',
+      token,
+      spender,
+      isUnlimited: true,
+      blockNumber: parseInt(log.blockNumber, 16)
+    });
+  }
+  return approvals;
+}
+
+function scoreApproval(a) {
+  var spenderLow = a.spender.toLowerCase();
+  var isKnown = !!KNOWN_SAFE[spenderLow];
+  if (isKnown && !a.isUnlimited) return {level:'safe', label:'Safe', cls:'safe'};
+  if (isKnown && a.isUnlimited) return {level:'medium', label:'Review', cls:'medium'};
+  if (a.isUnlimited) return {level:'high', label:'High Risk', cls:'high'};
+  return {level:'medium', label:'Review', cls:'medium'};
+}
+
+function renderRisk(approvals, address) {
+  var high = approvals.filter(a=>scoreApproval(a).level==='high').length;
+  var medium = approvals.filter(a=>scoreApproval(a).level==='medium').length;
+  var safe = approvals.filter(a=>scoreApproval(a).level==='safe').length;
+  var total = approvals.length;
+
+  var overallRisk = high>0?'high':medium>2?'medium':'safe';
+  var riskLabel = high>0?'High Risk':medium>2?'Moderate Risk':'Looking Good';
+  var riskSub = high>0
+    ? `${high} active approval${high>1?'s':''} with unlimited access to an unverified contract. Revoke immediately.`
+    : medium>0
+    ? `${medium} approval${medium>1?'s':''} worth reviewing. No critical risks detected.`
+    : total===0
+    ? 'No active approvals found. Your wallet has a clean approval history.'
+    : 'All approvals are from known protocols. Your wallet looks clean.';
+
+  document.getElementById('tbRisk').textContent = high>0?high+'⚠':total;
+  if(high>0) document.getElementById('tbRisk').style.background='rgba(239,68,68,0.15)';
+
+  var scoreNum = high>0 ? Math.max(20, 100-high*20-medium*5) : medium>0 ? Math.min(80, 100-medium*8) : 99;
+
+  var html = `
+  <div class="risk-tip">
+    ℹ️ Token approvals allow smart contracts to spend your tokens. Unlimited approvals to unknown contracts are dangerous — if the contract is hacked or malicious, your funds can be drained. Review and revoke any you don't recognise.
+  </div>
+
+  <div class="risk-score-wrap">
+    <div class="risk-dial ${overallRisk}">
+      <div class="risk-score-num ${overallRisk}">${scoreNum}</div>
+      <div class="risk-score-label">/ 100</div>
+    </div>
+    <div class="risk-score-body">
+      <div class="risk-score-title">${riskLabel}</div>
+      <div class="risk-score-sub">${riskSub}</div>
+      <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
+        ${high>0?`<span class="approval-risk-badge badge-high">⚠ ${high} High Risk</span>`:''}
+        ${medium>0?`<span class="approval-risk-badge badge-medium">⚡ ${medium} Review</span>`:''}
+        ${safe>0?`<span class="approval-risk-badge badge-safe">✓ ${safe} Safe</span>`:''}
+        ${total===0?`<span class="approval-risk-badge badge-safe">✓ No approvals found</span>`:''}
+      </div>
+    </div>
+  </div>`;
+
+  if (total === 0) {
+    html += `<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Clean wallet</div><p style="font-size:13px;color:var(--muted);">No active token approvals found on ${CHAINS[chain].name}.</p></div>`;
+  } else {
+    // Sort by risk level
+    var sorted = approvals.sort((a,b)=>{
+      var order={high:0,medium:1,safe:2};
+      return order[scoreApproval(a).level]-order[scoreApproval(b).level];
+    });
+
+    html += `<div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">${total} Active Approval${total!==1?'s':''}</div>`;
+    html += `<div class="approval-list">`;
+
+    for (var a of sorted) {
+      var score = scoreApproval(a);
+      var knownName = KNOWN_SAFE[a.spender.toLowerCase()];
+      var revokeUrl = CHAINS[chain].explorer + '/address/' + a.spender;
+      var tokenUrl = CHAINS[chain].explorer + '/token/' + a.token;
+      var shortToken = a.token.slice(0,8)+'...'+a.token.slice(-6);
+      var shortSpender = knownName || (a.spender.slice(0,8)+'...'+a.spender.slice(-6));
+      var amountStr = a.isUnlimited ? 'Unlimited ∞' : 'Limited';
+
+      html += `<div class="approval-card risk-${score.level}">
+        <div class="approval-hdr">
+          <div class="approval-token">${a.type === 'NFT' ? '🖼️ NFT Collection' : '🪙 '+a.type} Approval</div>
+          <span class="approval-risk-badge badge-${score.cls}">${score.label}</span>
+          ${knownName ? `<span class="approval-risk-badge badge-safe">✓ ${knownName}</span>` : '<span class="approval-risk-badge badge-high">⚠ Unverified Contract</span>'}
+        </div>
+        <div class="approval-detail">
+          <div class="approval-detail-item">
+            <div class="approval-detail-label">Token Contract</div>
+            <div class="approval-detail-val">${shortToken}</div>
+          </div>
+          <div class="approval-detail-item">
+            <div class="approval-detail-label">Approved Spender</div>
+            <div class="approval-detail-val">${shortSpender}</div>
+          </div>
+          <div class="approval-detail-item">
+            <div class="approval-detail-label">Allowance</div>
+            <div class="approval-detail-val ${a.isUnlimited?'unlimited':''}">${amountStr}</div>
+          </div>
+          <div class="approval-detail-item">
+            <div class="approval-detail-label">Block</div>
+            <div class="approval-detail-val">${a.blockNumber.toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="approval-actions">
+          <a href="https://revoke.cash/address/${address}" target="_blank" class="revoke-btn">🔒 Revoke on Revoke.cash</a>
+          <a href="${revokeUrl}" target="_blank" class="view-btn">↗ Spender</a>
+          <a href="${tokenUrl}" target="_blank" class="view-btn">↗ Token</a>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  document.getElementById('tab-risk').innerHTML = html;
+}
+
+function renderRiskFallback(address) {
+  return `<div class="approval-card" style="text-align:center;padding:24px;">
+    <div style="font-size:32px;margin-bottom:12px;">🔍</div>
+    <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;">Check approvals on Revoke.cash</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">The most comprehensive approval checker. Paste your address to see and revoke all approvals.</div>
+    <a href="https://revoke.cash/address/${address}" target="_blank" class="revoke-btn" style="display:inline-flex;">Open Revoke.cash →</a>
+  </div>`;
+}
+
 // ── UTILS ─────────────────────────────────────────────────────────────
 function switchTab(tab, el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
+  // Lazy-load risk scan when tab is first opened
+  if (tab==='risk' && curAddr && document.getElementById('tab-risk').innerHTML.trim()==='') {
+    runRiskScan(curAddr);
+  }
 }
 
 function fmtUSD(n) {
