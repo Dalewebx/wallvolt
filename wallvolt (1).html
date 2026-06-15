@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>WallVolt — On-Chain Portfolio Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#080C14;--surface:#0F1623;--surface2:#162032;--border:#1C2A3E;
+  --amber:#F59E0B;--amber-dark:#D97706;--blue:#3B82F6;--ok:#22C55E;
+  --danger:#EF4444;--text:#F1F5F9;--muted:#64748B;--dim:#334155;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+nav{padding:16px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,12,20,0.92);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-brand-icon{width:32px;height:32px;background:var(--amber);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#080C14;}
+.nav-brand-name{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);}
+.nav-brand-sub{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
+.chain-pills{display:flex;gap:6px;}
+.chain-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.chain-pill.active{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,0.08);}
+.chain-dot{width:6px;height:6px;border-radius:50%;}
+
+.search-wrap{padding:32px 32px 20px;}
+.search-bar{display:flex;gap:10px;}
+.search-input{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:13px 18px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color 0.2s;}
+.search-input:focus{border-color:var(--amber);}
+.search-input::placeholder{color:var(--dim);}
+.search-btn{background:var(--amber);color:#080C14;border:none;border-radius:12px;padding:13px 26px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.18s;white-space:nowrap;}
+.search-btn:hover{background:var(--amber-dark);}
+.search-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.search-examples{margin-top:8px;font-size:12px;color:var(--dim);}
+.ex{color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px;margin-right:10px;transition:color 0.15s;}
+.ex:hover{color:var(--amber);}
+
+.error-bar{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:11px 16px;font-size:13px;color:var(--danger);margin:0 32px 16px;display:none;}
+
+/* PORTFOLIO HEADER */
+.port-hdr{padding:0 32px 24px;}
+.addr-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.ens-name{font-family:'DM Serif Display',serif;font-size:19px;color:var(--text);}
+.addr-badge{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 11px;font-size:12px;color:var(--muted);font-family:monospace;}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
+.icon-btn:hover{border-color:var(--amber);color:var(--amber);}
+.port-value{font-family:'DM Serif Display',serif;font-size:48px;color:var(--text);line-height:1;margin-bottom:4px;}
+.port-value-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.port-stats{display:flex;gap:28px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.ps-num{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text);}
+.ps-label{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* LOADING BAR */
+.load-bar{height:2px;background:var(--border);margin:0 32px 0;border-radius:2px;overflow:hidden;display:none;}
+.load-bar-fill{height:100%;background:var(--amber);border-radius:2px;transition:width 0.3s ease;width:0%;}
+
+/* TABS */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);padding:0 32px;overflow-x:auto;}
+.tab{padding:11px 16px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber);font-weight:600;}
+.tab-badge{background:var(--surface2);border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px;font-weight:700;}
+.tab-content{padding:20px 32px;display:none;}
+.tab-content.active{display:block;}
+
+/* TOKENS */
+.token-list{display:flex;flex-direction:column;gap:5px;}
+.token-row{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surface);border:1px solid var(--border);border-radius:11px;transition:all 0.15s;}
+.token-row:hover{border-color:rgba(245,158,11,0.2);background:var(--surface2);}
+.token-logo{width:38px;height:38px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;overflow:hidden;border:1px solid var(--border);}
+.token-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.token-info{flex:1;min-width:0;}
+.token-sym{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.token-name{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.token-right{text-align:right;flex-shrink:0;}
+.token-usd{font-size:14px;font-weight:600;color:var(--text);}
+.token-bal{font-size:11px;color:var(--muted);margin-top:1px;}
+.chg{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;}
+.chg.pos{background:rgba(34,197,94,0.12);color:var(--ok);}
+.chg.neg{background:rgba(239,68,68,0.12);color:var(--danger);}
+
+/* NFT */
+.nft-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.nft-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;transition:all 0.18s;cursor:pointer;}
+.nft-card:hover{border-color:rgba(245,158,11,0.3);transform:translateY(-2px);}
+.nft-img{width:100%;aspect-ratio:1;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;}
+.nft-img img{width:100%;height:100%;object-fit:cover;}
+.nft-meta{padding:9px 11px;}
+.nft-col{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.nft-name{font-size:12px;font-weight:500;color:var(--text);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.load-more{width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;margin-top:10px;}
+.load-more:hover{border-color:var(--amber);color:var(--amber);}
+
+/* TX */
+.tx-list{display:flex;flex-direction:column;gap:5px;}
+.tx-row{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surface);border:1px solid var(--border);border-radius:11px;transition:all 0.15s;}
+.tx-row:hover{background:var(--surface2);}
+.tx-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.tx-icon.send{background:rgba(239,68,68,0.1);}
+.tx-icon.receive{background:rgba(34,197,94,0.1);}
+.tx-icon.contract{background:rgba(59,130,246,0.1);}
+.tx-body{flex:1;min-width:0;}
+.tx-label{font-size:13px;font-weight:500;color:var(--text);}
+.tx-hash{font-size:11px;color:var(--muted);font-family:monospace;margin-top:1px;}
+.tx-link{font-size:10px;color:var(--blue);text-decoration:none;}
+.tx-right{text-align:right;flex-shrink:0;}
+.tx-amt{font-size:13px;font-weight:600;}
+.tx-amt.send{color:var(--danger);}
+.tx-amt.receive{color:var(--ok);}
+.tx-date{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* SKELETON */
+.sk{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:10px;}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* LANDING */
+.landing{padding:72px 32px;max-width:600px;}
+.landing-title{font-family:'DM Serif Display',serif;font-size:clamp(34px,5vw,54px);color:var(--text);line-height:1.1;margin-bottom:14px;}
+.landing-title em{color:var(--amber);font-style:italic;}
+.landing-sub{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:28px;font-weight:300;}
+.features{display:flex;flex-direction:column;gap:8px;margin-top:28px;}
+.feat{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);}
+.feat-dot{width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0;}
+
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;}
+
+footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.footer-brand{font-family:'DM Serif Display',serif;font-size:15px;color:var(--amber);}
+.footer-note{font-size:11px;color:var(--dim);}
+
+@media(max-width:600px){
+  nav{padding:12px 16px;}.chain-pills{display:none;}
+  .search-wrap,.port-hdr,.tab-bar,.tab-content,.load-bar,.error-bar{padding-left:16px;padding-right:16px;}
+  .landing{padding:48px 16px;}
+  .port-value{font-size:34px;}
+  .nft-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+  footer{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-brand-icon">⚡</div>
+    <div>
+      <div class="nav-brand-name">WallVolt</div>
+      <div class="nav-brand-sub">On-Chain Dashboard</div>
+    </div>
+  </div>
+  <div class="chain-pills">
+    <div class="chain-pill active" onclick="setChain('eth',this)"><div class="chain-dot" style="background:#627EEA;"></div>Ethereum</div>
+    <div class="chain-pill" onclick="setChain('base',this)"><div class="chain-dot" style="background:#0052FF;"></div>Base</div>
+    <div class="chain-pill" onclick="setChain('polygon',this)"><div class="chain-dot" style="background:#8247E5;"></div>Polygon</div>
+  </div>
+</nav>
+
+<div class="search-wrap">
+  <div class="search-bar">
+    <input class="search-input" id="addrInput" type="text" placeholder="Paste wallet address (0x...) or ENS name" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')lookup()"/>
+    <button class="search-btn" id="searchBtn" onclick="lookup()">Look up →</button>
+  </div>
+  <div class="search-examples">Try: <span class="ex" onclick="quickLook('vitalik.eth')">vitalik.eth</span><span class="ex" onclick="quickLook('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')">Vitalik's wallet</span><span class="ex" onclick="quickLook('0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503')">Binance cold wallet</span></div>
+</div>
+
+<div class="error-bar" id="errBar"></div>
+<div class="load-bar" id="loadBar"><div class="load-bar-fill" id="loadFill"></div></div>
+
+<!-- LANDING -->
+<div id="landingState">
+  <div class="landing">
+    <div class="landing-title">Any wallet.<br><em>Every asset.</em><br>Instantly.</div>
+    <div class="landing-sub">Paste any Ethereum, Base, or Polygon wallet address to see tokens, NFTs, and transactions in real time. No wallet connection. No sign-up. Just paste and go.</div>
+    <div class="features">
+      <div class="feat"><div class="feat-dot"></div>Token balances with live USD prices</div>
+      <div class="feat"><div class="feat-dot"></div>NFT collection with on-chain images</div>
+      <div class="feat"><div class="feat-dot"></div>Full transaction history with readable labels</div>
+      <div class="feat"><div class="feat-dot"></div>Multi-chain: Ethereum · Base · Polygon</div>
+      <div class="feat"><div class="feat-dot"></div>Shareable URL — send your portfolio to anyone</div>
+    </div>
+  </div>
+</div>
+
+<!-- PORTFOLIO -->
+<div id="portState" style="display:none;">
+  <div class="port-hdr">
+    <div class="addr-row">
+      <div id="ensName" class="ens-name" style="display:none;"></div>
+      <div class="addr-badge" id="addrBadge"></div>
+      <button class="icon-btn" onclick="copyAddr()">📋 Copy</button>
+      <button class="icon-btn" onclick="sharePort()">🔗 Share</button>
+      <a id="explorerLink" href="#" target="_blank" class="icon-btn">↗ Explorer</a>
+    </div>
+    <div class="port-value" id="portValue">—</div>
+    <div class="port-value-label">Total Portfolio Value</div>
+    <div class="port-stats">
+      <div><div class="ps-num" id="stTokens">—</div><div class="ps-label">Tokens</div></div>
+      <div><div class="ps-num" id="stNFTs">—</div><div class="ps-label">NFTs</div></div>
+      <div><div class="ps-num" id="stTxs">—</div><div class="ps-label">Transactions</div></div>
+      <div><div class="ps-num" id="stChain">ETH</div><div class="ps-label">Network</div></div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('tokens',this)">Tokens <span class="tab-badge" id="tbTokens">0</span></div>
+    <div class="tab" onclick="switchTab('nfts',this)">NFTs <span class="tab-badge" id="tbNFTs">0</span></div>
+    <div class="tab" onclick="switchTab('txs',this)">Transactions <span class="tab-badge" id="tbTxs">0</span></div>
+  </div>
+
+  <div class="tab-content active" id="tab-tokens"></div>
+  <div class="tab-content" id="tab-nfts"></div>
+  <div class="tab-content" id="tab-txs"></div>
+</div>
+
+<footer>
+  <div class="footer-brand">WallVolt</div>
+  <div class="footer-note">Built by DaleX · Public blockchain data · No wallet connection required</div>
+</footer>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────
+var KEY = 'g17rCrDbjWmGVYzGUzDYY';
+var CHAINS = {
+  eth:     {name:'Ethereum', sym:'ETH',  color:'#627EEA', explorer:'https://etherscan.io',   cgId:'ethereum',     rpc:`https://eth-mainnet.g.alchemy.com/v2/${KEY}`,     nft:`https://eth-mainnet.g.alchemy.com/nft/v3/${KEY}`},
+  base:    {name:'Base',     sym:'ETH',  color:'#0052FF', explorer:'https://basescan.org',   cgId:'ethereum',     rpc:`https://base-mainnet.g.alchemy.com/v2/${KEY}`,    nft:`https://base-mainnet.g.alchemy.com/nft/v3/${KEY}`},
+  polygon: {name:'Polygon',  sym:'MATIC',color:'#8247E5', explorer:'https://polygonscan.com',cgId:'matic-network',rpc:`https://polygon-mainnet.g.alchemy.com/v2/${KEY}`,  nft:`https://polygon-mainnet.g.alchemy.com/nft/v3/${KEY}`},
+};
+
+var chain = 'eth';
+var curAddr = '';
+var priceCache = {data:{}, ts:0};
+var nftPage = null;
+var allNFTs = [];
+
+// ── CHAIN ───────────────────────────────────────────────────────────
+function setChain(c, el) {
+  chain = c;
+  document.querySelectorAll('.chain-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('stChain').textContent = CHAINS[c].sym;
+  if (curAddr) lookup(curAddr);
+}
+
+// ── LOOKUP ──────────────────────────────────────────────────────────
+async function lookup(addr) {
+  var input = addr || document.getElementById('addrInput').value.trim();
+  if (!input) return;
+
+  setBtnState(true);
+  setProgress(5);
+  hideErr();
+
+  try {
+    // Resolve ENS
+    var address = input;
+    if (input.toLowerCase().endsWith('.eth')) {
+      address = await resolveENS(input);
+      if (!address) { showErr('ENS name could not be resolved. Check the name and try again.'); setBtnState(false); setProgress(0); return; }
+      document.getElementById('ensName').textContent = input;
+      document.getElementById('ensName').style.display = 'block';
+    } else {
+      document.getElementById('ensName').style.display = 'none';
+    }
+
+    if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+      showErr('Invalid address. Use 0x format (42 characters) or an ENS name ending in .eth');
+      setBtnState(false); setProgress(0); return;
+    }
+
+    curAddr = address;
+    document.getElementById('addrBadge').textContent = address.slice(0,6)+'...'+address.slice(-4);
+    document.getElementById('explorerLink').href = CHAINS[chain].explorer+'/address/'+address;
+
+    document.getElementById('landingState').style.display = 'none';
+    document.getElementById('portState').style.display = 'block';
+
+    showSkeletons();
+    setProgress(15);
+
+    // Fetch prices and native balance immediately (fast)
+    var [prices, nativeBal] = await Promise.all([
+      fetchPrices(),
+      rpc('eth_getBalance', [address, 'latest'])
+    ]);
+
+    setProgress(35);
+
+    // Show native balance instantly
+    var c = CHAINS[chain];
+    var native = parseInt(nativeBal, 16) / 1e18;
+    var nativePrice = prices[c.cgId];
+    var nativeUsd = nativePrice ? native * nativePrice.usd : 0;
+    document.getElementById('portValue').textContent = '$' + fmtUSD(nativeUsd);
+
+    // Now fetch tokens, NFTs, txs in parallel
+    var [tokens, nfts, txs] = await Promise.all([
+      fetchTokens(address, prices, native, nativeUsd),
+      fetchNFTs(address),
+      fetchTxs(address)
+    ]);
+
+    setProgress(90);
+
+    renderTokens(tokens);
+    renderNFTs(nfts);
+    renderTxs(txs, address);
+
+    setProgress(100);
+    setTimeout(()=>setProgress(0), 600);
+
+  } catch(e) {
+    showErr('Error: '+(e.message||'Something went wrong. Check your connection and try again.'));
+    setProgress(0);
+  }
+  setBtnState(false);
+}
+
+function quickLook(a) {
+  document.getElementById('addrInput').value = a;
+  lookup(a);
+}
+
+// ── ENS ─────────────────────────────────────────────────────────────
+async function resolveENS(name) {
+  try {
+    // Use ENS public API for resolution
+    var r = await fetch(`https://api.ensideas.com/ens/resolve/${name}`);
+    if (!r.ok) throw new Error();
+    var d = await r.json();
+    return d.address || null;
+  } catch {
+    try {
+      // Fallback: use eth_call on ENS registry
+      var node = ethNamehash(name);
+      var data = '0x02571be3' + node.slice(2);
+      var resolver = await rpc('eth_call', [{to:'0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',data:'0x0178b8bf'+node.slice(2)},'latest']);
+      if (!resolver || resolver === '0x' + '0'.repeat(64)) return null;
+      var resolverAddr = '0x'+resolver.slice(26);
+      var addrResult = await rpc('eth_call', [{to:resolverAddr,data:'0x3b3b57de'+node.slice(2)},'latest']);
+      if (!addrResult || addrResult === '0x' + '0'.repeat(64)) return null;
+      return '0x'+addrResult.slice(26);
+    } catch { return null; }
+  }
+}
+
+function ethNamehash(name) {
+  // Simple namehash for ENS resolution
+  var node = '0000000000000000000000000000000000000000000000000000000000000000';
+  if (name === '') return '0x'+node;
+  var labels = name.split('.').reverse();
+  for (var l of labels) {
+    var labelHash = keccakStr(l);
+    node = keccakHex(node + labelHash);
+  }
+  return '0x'+node;
+}
+
+// ── PRICES (cached 60s) ─────────────────────────────────────────────
+async function fetchPrices() {
+  var now = Date.now();
+  if (priceCache.ts && now - priceCache.ts < 60000) return priceCache.data;
+  try {
+    var ids = 'ethereum,matic-network,usd-coin,tether,dai,chainlink,uniswap,aave,maker,wrapped-bitcoin,shiba-inu,pepe';
+    var r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
+    var d = await r.json();
+    priceCache = {data:d, ts:now};
+    return d;
+  } catch { return priceCache.data || {}; }
+}
+
+function priceFor(sym, prices) {
+  var map = {ETH:'ethereum',WETH:'ethereum',MATIC:'matic-network',WMATIC:'matic-network',USDC:'usd-coin',USDT:'tether',DAI:'dai',LINK:'chainlink',UNI:'uniswap',AAVE:'aave',MKR:'maker',WBTC:'wrapped-bitcoin',SHIB:'shiba-inu',PEPE:'pepe'};
+  var id = map[(sym||'').toUpperCase()];
+  return id && prices[id] ? prices[id] : null;
+}
+
+// ── TOKENS (single alchemy_getTokensForOwner call) ─────────────────
+async function fetchTokens(address, prices, native, nativeUsd) {
+  var c = CHAINS[chain];
+  var tokens = [{
+    sym: c.sym, name: c.name, bal: native,
+    usd: nativeUsd, chg: prices[c.cgId]?.usd_24h_change || null,
+    logo: null, isNative: true
+  }];
+
+  try {
+    // Single API call for ALL token balances + metadata
+    var r = await fetch(c.rpc, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        jsonrpc:'2.0', id:1,
+        method:'alchemy_getTokensForOwner',
+        params:[address, {withMetadata:true}]
+      })
+    });
+    var d = await r.json();
+    var items = d.result?.tokens || [];
+
+    for (var t of items) {
+      var bal = parseFloat(t.balance||0);
+      if (bal < 0.000001) continue;
+      var p = priceFor(t.symbol, prices);
+      tokens.push({
+        sym: t.symbol || '?',
+        name: t.name || 'Unknown Token',
+        bal,
+        usd: p ? bal * p.usd : null,
+        chg: p ? p.usd_24h_change : null,
+        logo: t.logo || null,
+        contract: t.contractAddress
+      });
+    }
+  } catch(e) {
+    console.warn('Token fetch error:', e);
+  }
+
+  tokens.sort((a,b) => (b.usd||0) - (a.usd||0));
+  return tokens;
+}
+
+// ── NFTs ─────────────────────────────────────────────────────────────
+async function fetchNFTs(address) {
+  try {
+    var r = await fetch(`${CHAINS[chain].nft}/getNFTsForOwner?owner=${address}&withMetadata=true&pageSize=24`);
+    var d = await r.json();
+    nftPage = d.pageKey || null;
+    allNFTs = d.ownedNfts || [];
+    return allNFTs;
+  } catch { return []; }
+}
+
+async function loadMoreNFTs() {
+  if (!nftPage) return;
+  try {
+    var r = await fetch(`${CHAINS[chain].nft}/getNFTsForOwner?owner=${curAddr}&withMetadata=true&pageSize=24&pageKey=${nftPage}`);
+    var d = await r.json();
+    nftPage = d.pageKey || null;
+    allNFTs = [...allNFTs, ...(d.ownedNfts||[])];
+    renderNFTs(allNFTs);
+  } catch {}
+}
+
+// ── TRANSACTIONS ─────────────────────────────────────────────────────
+async function fetchTxs(address) {
+  try {
+    var c = CHAINS[chain];
+    // Fetch sent and received in parallel
+    var [recv, sent] = await Promise.all([
+      rpc('alchemy_getAssetTransfers', [{fromBlock:'0x0',toAddress:address,category:['external','erc20','erc721'],maxCount:'0x10',order:'desc'}]),
+      rpc('alchemy_getAssetTransfers', [{fromBlock:'0x0',fromAddress:address,category:['external','erc20','erc721'],maxCount:'0x10',order:'desc'}])
+    ]);
+    var all = [
+      ...(recv?.transfers||[]).map(t=>({...t,dir:'receive'})),
+      ...(sent?.transfers||[]).map(t=>({...t,dir:'send'}))
+    ].sort((a,b)=>new Date(b.metadata?.blockTimestamp||0)-new Date(a.metadata?.blockTimestamp||0)).slice(0,20);
+    return all;
+  } catch { return []; }
+}
+
+// ── RPC ───────────────────────────────────────────────────────────────
+async function rpc(method, params) {
+  var r = await fetch(CHAINS[chain].rpc, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({jsonrpc:'2.0',id:1,method,params})
+  });
+  var d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return d.result;
+}
+
+// ── RENDERERS ─────────────────────────────────────────────────────────
+function renderTokens(tokens) {
+  var total = tokens.reduce((a,t)=>a+(t.usd||0),0);
+  document.getElementById('portValue').textContent = '$'+fmtUSD(total);
+  document.getElementById('stTokens').textContent = tokens.length;
+  document.getElementById('tbTokens').textContent = tokens.length;
+
+  if (!tokens.length) { document.getElementById('tab-tokens').innerHTML = empty('💰','No tokens','No token balances found on '+CHAINS[chain].name+'.'); return; }
+
+  document.getElementById('tab-tokens').innerHTML = `<div class="token-list">${tokens.map(t=>{
+    var logoHtml = t.logo
+      ? `<img src="${t.logo}" alt="${t.sym}" onerror="this.parentNode.innerHTML='<span>${t.sym.charAt(0)}</span>'">`
+      : `<span style="font-size:14px;font-weight:700;color:var(--muted);">${t.sym.charAt(0)}</span>`;
+    var chgHtml = t.chg!=null ? `<span class="chg ${t.chg>=0?'pos':'neg'}">${t.chg>=0?'+':''}${t.chg.toFixed(2)}%</span>` : '';
+    return `<div class="token-row">
+      <div class="token-logo">${logoHtml}</div>
+      <div class="token-info">
+        <div class="token-sym">${t.sym} ${chgHtml}</div>
+        <div class="token-name">${t.name}</div>
+      </div>
+      <div class="token-right">
+        <div class="token-usd">${t.usd!=null?'$'+fmtUSD(t.usd):'—'}</div>
+        <div class="token-bal">${fmtBal(t.bal)} ${t.sym}</div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderNFTs(nfts) {
+  document.getElementById('stNFTs').textContent = nfts.length+(nftPage?'+':'');
+  document.getElementById('tbNFTs').textContent = nfts.length+(nftPage?'+':'');
+
+  if (!nfts.length) { document.getElementById('tab-nfts').innerHTML = empty('🖼️','No NFTs','No NFTs found on '+CHAINS[chain].name+'.'); return; }
+
+  var cards = nfts.map(n=>{
+    var img = n.image?.cachedUrl || n.image?.originalUrl || n.rawMetadata?.image || '';
+    var imgHtml = img
+      ? `<img src="${img}" alt="${n.name||'NFT'}" loading="lazy" onerror="this.parentNode.innerHTML='🖼️'">`
+      : '🖼️';
+    var col = (n.contract?.name||'Unknown').slice(0,22);
+    var name = (n.name || '#'+n.tokenId || 'NFT').slice(0,24);
+    var explorerUrl = CHAINS[chain].explorer+'/nft/'+n.contract?.address+'/'+n.tokenId;
+    return `<div class="nft-card" onclick="window.open('${explorerUrl}','_blank')">
+      <div class="nft-img">${imgHtml}</div>
+      <div class="nft-meta">
+        <div class="nft-col">${col}</div>
+        <div class="nft-name">${name}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  var moreBtn = nftPage ? `<button class="load-more" onclick="loadMoreNFTs()">Load more NFTs →</button>` : '';
+  document.getElementById('tab-nfts').innerHTML = `<div class="nft-grid">${cards}</div>${moreBtn}`;
+}
+
+function renderTxs(txs, address) {
+  document.getElementById('stTxs').textContent = txs.length;
+  document.getElementById('tbTxs').textContent = txs.length;
+
+  if (!txs.length) { document.getElementById('tab-txs').innerHTML = empty('📋','No transactions','No recent transactions on '+CHAINS[chain].name+'.'); return; }
+
+  document.getElementById('tab-txs').innerHTML = `<div class="tx-list">${txs.map(tx=>{
+    var isSend = tx.dir==='send';
+    var isNFT = tx.category==='erc721';
+    var icon = isNFT?'🖼️':isSend?'↑':'↓';
+    var cls = isNFT?'contract':isSend?'send':'receive';
+    var label = isNFT
+      ? (isSend?'Sent NFT':'Received NFT')
+      : tx.category==='erc20'
+        ? (isSend?`Sent ${tx.asset||'token'}`:`Received ${tx.asset||'token'}`)
+        : (isSend?`Sent ${CHAINS[chain].sym}`:`Received ${CHAINS[chain].sym}`);
+    var amt = tx.value ? fmtBal(tx.value)+' '+(tx.asset||CHAINS[chain].sym) : 'NFT';
+    var date = tx.metadata?.blockTimestamp ? new Date(tx.metadata.blockTimestamp).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    var hash = tx.hash||'';
+    var shortHash = hash ? hash.slice(0,10)+'...'+hash.slice(-6) : '';
+    return `<div class="tx-row">
+      <div class="tx-icon ${cls}">${icon}</div>
+      <div class="tx-body">
+        <div class="tx-label">${label}</div>
+        <div class="tx-hash">${shortHash}</div>
+        ${hash?`<a href="${CHAINS[chain].explorer}/tx/${hash}" target="_blank" class="tx-link">View →</a>`:''}
+      </div>
+      <div class="tx-right">
+        <div class="tx-amt ${isSend?'send':'receive'}">${isSend?'-':'+'}${amt}</div>
+        <div class="tx-date">${date}</div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function showSkeletons() {
+  var sk=(n,h)=>Array(n).fill(`<div class="sk" style="height:${h}px;margin-bottom:6px;"></div>`).join('');
+  document.getElementById('tab-tokens').innerHTML=sk(5,60);
+  document.getElementById('tab-nfts').innerHTML=`<div class="nft-grid">${Array(8).fill('<div class="sk" style="height:190px;border-radius:11px;"></div>').join('')}</div>`;
+  document.getElementById('tab-txs').innerHTML=sk(6,60);
+  ['portValue','stTokens','stNFTs','stTxs'].forEach(id=>{
+    if(id==='portValue') document.getElementById(id).textContent='Loading...';
+  });
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+function fmtUSD(n) {
+  if (n>=1e9) return (n/1e9).toFixed(2)+'B';
+  if (n>=1e6) return (n/1e6).toFixed(2)+'M';
+  if (n>=1e3) return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return n.toFixed(2);
+}
+
+function fmtBal(n) {
+  if (n>=1e6) return (n/1e6).toFixed(2)+'M';
+  if (n>=1e3) return (n/1e3).toFixed(2)+'K';
+  if (n>=1) return parseFloat(n.toFixed(4)).toString();
+  if (n>=0.0001) return parseFloat(n.toFixed(6)).toString();
+  return n.toExponential(2);
+}
+
+function empty(icon,title,sub) {
+  return `<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><p style="font-size:13px;">${sub}</p></div>`;
+}
+
+function showErr(msg){var e=document.getElementById('errBar');e.textContent=msg;e.style.display='block';}
+function hideErr(){document.getElementById('errBar').style.display='none';}
+
+function setBtnState(loading) {
+  var btn=document.getElementById('searchBtn');
+  btn.disabled=loading;
+  btn.textContent=loading?'Loading...':'Look up →';
+  document.getElementById('loadBar').style.display=loading?'block':'none';
+}
+
+function setProgress(pct) {
+  document.getElementById('loadFill').style.width=pct+'%';
+}
+
+function copyAddr() {
+  navigator.clipboard?.writeText(curAddr).then(()=>{
+    var b=document.querySelector('.icon-btn');
+    b.textContent='✓ Copied';
+    setTimeout(()=>b.textContent='📋 Copy',1500);
+  });
+}
+
+function sharePort() {
+  var url=location.origin+location.pathname+'?address='+curAddr+'&chain='+chain;
+  navigator.clipboard?.writeText(url).then(()=>{
+    var btns=document.querySelectorAll('.icon-btn');
+    btns[1].textContent='✓ Link copied!';
+    setTimeout(()=>btns[1].textContent='🔗 Share',2000);
+  });
+}
+
+// Simple keccak stubs for ENS namehash (using js-sha3 alternative approach)
+function keccakStr(s){return keccakHex(Array.from(new TextEncoder().encode(s)).map(b=>b.toString(16).padStart(2,'0')).join(''));}
+function keccakHex(hex){
+  // For ENS we use the ETH node — simplified for common cases
+  // Real implementation would use a keccak library
+  return hex; // placeholder - ENS API handles this
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+(function(){
+  var p=new URLSearchParams(location.search);
+  var addr=p.get('address'), ch=p.get('chain');
+  if(ch&&CHAINS[ch]){
+    chain=ch;
+    document.querySelectorAll('.chain-pill').forEach((pill,i)=>{
+      pill.classList.toggle('active',['eth','base','polygon'][i]===ch);
+    });
+  }
+  if(addr){document.getElementById('addrInput').value=addr;lookup(addr);}
+})();
+</script>
+</body>
+</html>
