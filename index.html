@@ -206,6 +206,7 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
   footer{padding:16px;}
 }
 </style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23080C14'/%3E%3Cpolygon points='19,3 10,18 16,18 13,29 22,14 16,14' fill='%23F59E0B'/%3E%3C/svg%3E"/>
 </head>
 <body>
 
@@ -269,6 +270,7 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
       <div><div class="ps-num" id="stChain">ETH</div><div class="ps-label">Network</div></div>
     </div>
   </div>
+  <div id="walletLabelsSlot"></div>
 
   <div class="tab-bar">
     <div class="tab active" onclick="switchTab('tokens',this)">Tokens <span class="tab-badge" id="tbTokens">0</span></div>
@@ -347,6 +349,7 @@ async function lookup(addr) {
 
     showSkeletons();
     document.getElementById('tab-risk').innerHTML = '';
+    document.getElementById('walletLabelsSlot').innerHTML = '';
     setProgress(15);
 
     // Fetch prices and native balance immediately (fast)
@@ -377,12 +380,8 @@ async function lookup(addr) {
     renderNFTs(nfts);
     renderTxs(txs, address);
 
-    // Inject smart wallet labels under portfolio value
-    var labelsHtml = renderWalletLabels(tokens, nfts, txs);
-    if (labelsHtml) {
-      var statsRow = document.getElementById('port-stats-row');
-      if (statsRow) statsRow.insertAdjacentHTML('afterend', labelsHtml);
-    }
+    // Render wallet labels into dedicated slot
+    document.getElementById('walletLabelsSlot').innerHTML = renderWalletLabels(tokens, nfts, txs);
 
     setProgress(100);
     setTimeout(()=>setProgress(0), 600);
@@ -697,13 +696,10 @@ function generateWalletLabels(tokens, nfts, txs) {
 function renderWalletLabels(tokens, nfts, txs) {
   var labels = generateWalletLabels(tokens, nfts, txs);
   if (!labels.length) return '';
-  return `
-    <div style="margin-bottom:20px;">
-      <div class="label-section-title">Wallet Intelligence</div>
-      <div class="wallet-labels">
-        ${labels.map(l=>`<div class="wallet-label ${l.cls}" title="${l.tip}">${l.text}</div>`).join('')}
-      </div>
-    </div>`;
+  return `<div style="padding:0 32px 18px;">
+    <div class="label-section-title" style="margin-bottom:8px;">Wallet Intelligence</div>
+    <div class="wallet-labels">${labels.map(l=>`<div class="wallet-label ${l.cls}" title="${l.tip}">${l.text}</div>`).join('')}</div>
+  </div>`;
 }
 
 // ── SUSPICIOUS CONTRACT DETECTION ────────────────────────────────────
