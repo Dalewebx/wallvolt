@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="theme-color" content="#080C14"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <title>WallVolt — On-Chain Portfolio Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet"/>
 <style>
@@ -197,13 +200,121 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
 .footer-brand{font-family:'DM Serif Display',serif;font-size:15px;color:var(--amber);}
 .footer-note{font-size:11px;color:var(--dim);}
 
-@media(max-width:600px){
-  nav{padding:12px 16px;}.chain-pills{display:none;}
-  .search-wrap,.port-hdr,.tab-bar,.tab-content,.load-bar,.error-bar{padding-left:16px;padding-right:16px;}
-  .landing{padding:48px 16px;}
-  .port-value{font-size:34px;}
-  .nft-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
-  footer{padding:16px;}
+/* ── MOBILE FIRST ── */
+@media(max-width:768px){
+  /* NAV */
+  nav{padding:12px 16px;gap:8px;}
+  .nav-brand-sub{display:none;}
+  .chain-pills{display:none;} /* hidden — use mobile chain bar instead */
+
+  /* MOBILE CHAIN BAR — fixed at bottom */
+  .mobile-chain-bar{display:flex !important;}
+
+  /* SEARCH */
+  .search-wrap{padding:16px 16px 12px;}
+  .search-bar{flex-direction:column;gap:8px;}
+  .search-input{font-size:14px;padding:12px 14px;}
+  .search-btn{width:100%;padding:12px;}
+  .search-examples{font-size:11px;}
+
+  /* ERROR / LOAD */
+  .error-bar{margin:0 16px 12px;}
+  .load-bar{margin:0 16px 0;}
+
+  /* PORTFOLIO HEADER */
+  .port-hdr{padding:0 16px 20px;}
+  .addr-row{gap:6px;}
+  .addr-badge{font-size:11px;padding:4px 8px;}
+  .icon-btn{padding:5px 8px;font-size:10px;}
+  .port-value{font-size:32px;}
+  .port-stats{gap:16px;}
+  .ps-num{font-size:17px;}
+  .ps-label{font-size:9px;}
+
+  /* WALLET LABELS */
+  #walletLabelsSlot > div{padding:0 16px 14px;}
+
+  /* TABS — horizontal scroll, no wrap */
+  .tab-bar{padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tab-bar::-webkit-scrollbar{display:none;}
+  .tab{padding:10px 14px;font-size:12px;flex-shrink:0;}
+  .tab-content{padding:16px;}
+
+  /* TOKENS */
+  .token-row{padding:11px 12px;gap:10px;}
+  .token-logo{width:34px;height:34px;font-size:15px;}
+  .token-sym{font-size:13px;}
+  .token-name{font-size:10px;}
+  .token-usd{font-size:13px;}
+  .token-bal{font-size:10px;}
+
+  /* NFTs */
+  .nft-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;}
+  .nft-info{padding:7px 9px;}
+  .nft-col{font-size:9px;}
+  .nft-name{font-size:11px;}
+
+  /* TRANSACTIONS */
+  .tx-row{padding:11px 12px;gap:10px;}
+  .tx-icon{width:32px;height:32px;font-size:13px;flex-shrink:0;}
+  .tx-label{font-size:12px;}
+  .tx-hash{font-size:10px;}
+  .tx-amt{font-size:12px;}
+  .tx-date{font-size:10px;}
+
+  /* TRUST SCORE */
+  .score-wrap{grid-template-columns:1fr;gap:12px;}
+
+  /* EXPOSURE */
+  .exposure-hero{flex-direction:column;gap:12px;}
+  .exposure-hero > div + div{border-left:none;padding-left:0;border-top:1px solid var(--border);padding-top:12px;}
+  .exposure-amount{font-size:30px;}
+  .approval-detail{grid-template-columns:1fr;}
+
+  /* RESUME */
+  .resume-grid{grid-template-columns:1fr 1fr;}
+  .resume-hero{padding:18px;}
+  .resume-age{font-size:22px;}
+
+  /* COMPARE */
+  .compare-input-row{grid-template-columns:1fr;}
+  .compare-grid{grid-template-columns:1fr;}
+
+  /* CHART */
+  .chart-hdr{flex-direction:column;align-items:flex-start;gap:12px;}
+  .chart-value{font-size:26px;}
+  .chart-period-btns{width:100%;justify-content:space-between;}
+  .period-btn{flex:1;text-align:center;padding:6px 4px;}
+
+  /* RISK */
+  .risk-score-wrap{flex-direction:column;gap:14px;}
+  .approval-hdr{flex-direction:column;align-items:flex-start;gap:6px;}
+  .contract-meta{gap:5px;}
+  .risk-reasons{gap:4px;}
+  .approval-actions{flex-direction:column;}
+  .revoke-btn,.view-btn{width:100%;justify-content:center;}
+
+  /* WATCHLIST */
+  .watchlist-add{flex-direction:column;}
+  .watchlist-name-input,.watchlist-addr-input,.watchlist-add-btn{width:100%;}
+  .watch-card{flex-wrap:wrap;gap:10px;}
+  .watch-actions{width:100%;justify-content:flex-end;}
+
+  /* LANDING */
+  .landing{padding:40px 16px;}
+  .landing-title{font-size:clamp(28px,8vw,42px);}
+  .landing-sub{font-size:14px;}
+
+  /* FOOTER */
+  footer{padding:14px 16px;flex-direction:column;gap:4px;text-align:center;}
+}
+
+@media(max-width:380px){
+  .chain-pills{display:none;}
+  .port-value{font-size:26px;}
+  .nft-grid{grid-template-columns:1fr 1fr;}
+  .resume-grid{grid-template-columns:1fr;}
+  .icon-btn:nth-child(3){display:none;}
 }
 
 /* TRUST SCORE */
@@ -343,6 +454,38 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
 .watch-empty-icon{font-size:40px;margin-bottom:12px;}
 .watch-empty-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:6px;}
 .watch-empty-sub{font-size:13px;color:var(--muted);line-height:1.6;}
+
+/* MOBILE CHAIN BAR */
+.mobile-chain-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(8,12,20,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:10px 12px;gap:6px;z-index:200;-webkit-overflow-scrolling:touch;overflow-x:auto;scrollbar-width:none;padding-bottom:max(10px,env(safe-area-inset-bottom));}
+.mobile-chain-bar::-webkit-scrollbar{display:none;}
+.mobile-chain-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--border);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;background:var(--surface);}
+.mobile-chain-btn.active{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,0.1);}
+
+/* BOTTOM PADDING for mobile chain bar */
+@media(max-width:768px){
+  body{padding-bottom:60px;}
+  footer{padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));}
+}
+
+/* INPUT IMPROVEMENTS — prevent zoom on iOS */
+.search-input,.watchlist-name-input,.watchlist-addr-input{font-size:16px !important;}
+@media(min-width:769px){
+  .search-input,.watchlist-name-input,.watchlist-addr-input{font-size:15px !important;}
+}
+
+/* TOUCH TARGETS — minimum 44px */
+.tab{min-height:44px;display:flex;align-items:center;}
+.token-row,.tx-row,.nft-card,.watch-card{cursor:pointer;}
+.token-row:active,.tx-row:active{background:var(--surface2);}
+
+/* SMOOTH SCROLLING — iOS momentum */
+.tab-bar,.token-list,.tx-list,.approval-list,.nft-grid{-webkit-overflow-scrolling:touch;}
+
+/* PREVENT TEXT SELECTION on tap */
+.tab,.chain-pill,.mobile-chain-btn,.icon-btn,.period-btn{-webkit-user-select:none;user-select:none;}
+
+/* SAFE AREA for notched phones */
+nav{padding-top:max(16px,env(safe-area-inset-top,0px));}
 </style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23080C14'/><polygon points='62,8 35,52 50,52 38,92 70,45 55,45' fill='%23F59E0B' stroke='%23D97706' stroke-width='2'/></svg>"/>
 <link rel="alternate icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABjSURBVFhH7ZAxDoAgDEW/3sHEeBBPKAdxoTExMTEY4v0bxMRCgYQM8F/ykt/QEEIIcQJASimllB6ttVJKaa21lFJKKYQQQgghhBBCCPkDgCRJkiRJkiRJkiRJkiRJkiRJkuQAJpsIG4UAAAAASUVORK5CYII="/>
@@ -358,9 +501,14 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
     </div>
   </div>
   <div class="chain-pills">
-    <div class="chain-pill active" onclick="setChain('eth',this)"><div class="chain-dot" style="background:#627EEA;"></div>Ethereum</div>
-    <div class="chain-pill" onclick="setChain('base',this)"><div class="chain-dot" style="background:#0052FF;"></div>Base</div>
-    <div class="chain-pill" onclick="setChain('polygon',this)"><div class="chain-dot" style="background:#8247E5;"></div>Polygon</div>
+    <div class="chain-pill active" onclick="setChain('eth',this)"><div class="chain-dot" style="background:#627EEA;"></div><span>Ethereum</span></div>
+    <div class="chain-pill" onclick="setChain('base',this)"><div class="chain-dot" style="background:#0052FF;"></div><span>Base</span></div>
+    <div class="chain-pill" onclick="setChain('polygon',this)"><div class="chain-dot" style="background:#8247E5;"></div><span>Polygon</span></div>
+    <div class="chain-pill" onclick="setChain('arb',this)"><div class="chain-dot" style="background:#12AAFF;"></div><span>Arbitrum</span></div>
+    <div class="chain-pill" onclick="setChain('op',this)"><div class="chain-dot" style="background:#FF0420;"></div><span>Optimism</span></div>
+    <div class="chain-pill" onclick="setChain('bsc',this)"><div class="chain-dot" style="background:#F3BA2F;"></div><span>BNB</span></div>
+    <div class="chain-pill" onclick="setChain('avax',this)"><div class="chain-dot" style="background:#E84142;"></div><span>Avalanche</span></div>
+    <div class="chain-pill" style="border-color:var(--amber);color:var(--amber);" onclick="runMultiChain()">⚡ <span>All Chains</span></div>
   </div>
 </nav>
 
@@ -446,27 +594,211 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
   <div class="footer-note">Built by DaleX · Public blockchain data · No wallet connection required</div>
 </footer>
 
+<!-- MOBILE CHAIN BAR -->
+<div class="mobile-chain-bar" id="mobileChainBar">
+  <div class="mobile-chain-btn active" onclick="setChainMobile('eth',this)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#627EEA;"></div>ETH
+  </div>
+  <div class="mobile-chain-btn" onclick="setChainMobile('base',this)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#0052FF;"></div>BASE
+  </div>
+  <div class="mobile-chain-btn" onclick="setChainMobile('polygon',this)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#8247E5;"></div>MATIC
+  </div>
+  <div class="mobile-chain-btn" onclick="setChainMobile('arb',this)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#12AAFF;"></div>ARB
+  </div>
+  <div class="mobile-chain-btn" onclick="setChainMobile('op',this)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#FF0420;"></div>OP
+  </div>
+  <div class="mobile-chain-btn" onclick="setChainMobile('bsc',this)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#F3BA2F;"></div>BSC
+  </div>
+</div>
+
+
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────
 var KEY = 'g17rCrDbjWmGVYzGUzDYY';
+var COVALENT_KEY = 'cqt_rQwBkBXmFP8gJv9HxGvYQT4PKMY7'; // free tier
+
+// Chains supported by Alchemy (deep data)
 var CHAINS = {
-  eth:     {name:'Ethereum', sym:'ETH',  color:'#627EEA', explorer:'https://etherscan.io',   cgId:'ethereum',     rpc:`https://eth-mainnet.g.alchemy.com/v2/${KEY}`,     nft:`https://eth-mainnet.g.alchemy.com/nft/v3/${KEY}`},
-  base:    {name:'Base',     sym:'ETH',  color:'#0052FF', explorer:'https://basescan.org',   cgId:'ethereum',     rpc:`https://base-mainnet.g.alchemy.com/v2/${KEY}`,    nft:`https://base-mainnet.g.alchemy.com/nft/v3/${KEY}`},
-  polygon: {name:'Polygon',  sym:'MATIC',color:'#8247E5', explorer:'https://polygonscan.com',cgId:'matic-network',rpc:`https://polygon-mainnet.g.alchemy.com/v2/${KEY}`,  nft:`https://polygon-mainnet.g.alchemy.com/nft/v3/${KEY}`},
+  eth:     {name:'Ethereum', sym:'ETH',  color:'#627EEA', explorer:'https://etherscan.io',   cgId:'ethereum',     rpc:`https://eth-mainnet.g.alchemy.com/v2/${KEY}`,     nft:`https://eth-mainnet.g.alchemy.com/nft/v3/${KEY}`,     covalentId:1},
+  base:    {name:'Base',     sym:'ETH',  color:'#0052FF', explorer:'https://basescan.org',   cgId:'ethereum',     rpc:`https://base-mainnet.g.alchemy.com/v2/${KEY}`,    nft:`https://base-mainnet.g.alchemy.com/nft/v3/${KEY}`,    covalentId:8453},
+  polygon: {name:'Polygon',  sym:'MATIC',color:'#8247E5', explorer:'https://polygonscan.com',cgId:'matic-network',rpc:`https://polygon-mainnet.g.alchemy.com/v2/${KEY}`,  nft:`https://polygon-mainnet.g.alchemy.com/nft/v3/${KEY}`,covalentId:137},
+  arb:     {name:'Arbitrum', sym:'ETH',  color:'#12AAFF', explorer:'https://arbiscan.io',    cgId:'ethereum',     rpc:null, nft:null, covalentId:42161, covalentOnly:true},
+  op:      {name:'Optimism', sym:'ETH',  color:'#FF0420', explorer:'https://optimistic.etherscan.io',cgId:'ethereum',rpc:null,nft:null,covalentId:10,   covalentOnly:true},
+  bsc:     {name:'BNB Chain',sym:'BNB',  color:'#F3BA2F', explorer:'https://bscscan.com',    cgId:'binancecoin', rpc:null, nft:null, covalentId:56,    covalentOnly:true},
+  avax:    {name:'Avalanche',sym:'AVAX', color:'#E84142', explorer:'https://snowtrace.io',   cgId:'avalanche-2',  rpc:null, nft:null, covalentId:43114, covalentOnly:true},
+  ftm:     {name:'Fantom',   sym:'FTM',  color:'#1969FF', explorer:'https://ftmscan.com',    cgId:'fantom',       rpc:null, nft:null, covalentId:250,   covalentOnly:true},
+  zksync:  {name:'zkSync',   sym:'ETH',  color:'#4E529A', explorer:'https://explorer.zksync.io',cgId:'ethereum', rpc:null, nft:null, covalentId:324,   covalentOnly:true},
+  linea:   {name:'Linea',    sym:'ETH',  color:'#61DFFF', explorer:'https://lineascan.build',cgId:'ethereum',     rpc:null, nft:null, covalentId:59144, covalentOnly:true},
 };
+
+// All chain multi-scan uses Covalent
+var MULTI_CHAIN_IDS = ['eth','base','polygon','arb','op','bsc','avax'];
 
 var chain = 'eth';
 var curAddr = '';
 var priceCache = {data:{}, ts:0};
 var nftPage = null;
 var allNFTs = [];
+var multiChainMode = false;
+
+
+// ── COVALENT API ──────────────────────────────────────────────────────
+async function covalentGet(path) {
+  const res = await fetch(`https://api.covalenthq.com/v1/${path}&key=${COVALENT_KEY}`);
+  if (!res.ok) throw new Error('Covalent API error: ' + res.status);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error_message || 'Covalent error');
+  return data.data;
+}
+
+async function fetchTokensCovalent(address, chainId) {
+  const data = await covalentGet(`${chainId}/address/${address}/balances_v2/?quote-currency=USD`);
+  const items = data?.items || [];
+  return items
+    .filter(t => t.balance && t.balance !== '0')
+    .map(t => ({
+      sym: t.contract_ticker_symbol || '?',
+      name: t.contract_name || 'Unknown',
+      bal: parseFloat(t.balance) / Math.pow(10, t.contract_decimals || 18),
+      usd: t.quote || null,
+      chg: null,
+      logo: t.logo_url || null,
+      contract: t.contract_address,
+      chain: chainId
+    }))
+    .filter(t => t.bal > 0.000001);
+}
+
+// ── MULTI-CHAIN SCAN ──────────────────────────────────────────────────
+async function runMultiChain() {
+  const input = document.getElementById('addrInput').value.trim();
+  if (!input) { showErr('Enter a wallet address first.'); return; }
+
+  setBtnState(true);
+  setProgress(5);
+  hideErr();
+
+  let address = input;
+  if (input.toLowerCase().endsWith('.eth')) {
+    address = await resolveENS(input);
+    if (!address) { showErr('ENS name could not be resolved.'); setBtnState(false); setProgress(0); return; }
+  }
+  if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+    showErr('Invalid address format.'); setBtnState(false); setProgress(0); return;
+  }
+
+  curAddr = address;
+  document.getElementById('addrBadge').textContent = address.slice(0,6)+'...'+address.slice(-4);
+  document.getElementById('explorerLink').href = 'https://etherscan.io/address/'+address;
+  document.getElementById('stChain').textContent = 'ALL';
+  document.getElementById('ensName').style.display = 'none';
+  document.getElementById('landingState').style.display = 'none';
+  document.getElementById('portState').style.display = 'block';
+  ['tab-risk','tab-score','tab-resume','tab-exposure','tab-timeline','tab-chart','tab-defi'].forEach(id=>document.getElementById(id).innerHTML='');
+  showSkeletons();
+  setProgress(20);
+
+  try {
+    const chainEntries = Object.entries(CHAINS);
+    const results = await Promise.allSettled(
+      chainEntries.map(([id, c]) =>
+        fetchTokensCovalent(address, c.covalentId).then(tokens => ({chainId:id, chain:c, tokens}))
+      )
+    );
+
+    setProgress(70);
+
+    let allTokens = [];
+    let totalUSD = 0;
+    const chainBreakdown = [];
+
+    for (const result of results) {
+      if (result.status !== 'fulfilled') continue;
+      const { chainId, chain: c, tokens } = result.value;
+      const chainTotal = tokens.reduce((a,t)=>a+(t.usd||0),0);
+      if (chainTotal < 0.01 && tokens.length === 0) continue;
+      totalUSD += chainTotal;
+      allTokens = [...allTokens, ...tokens.map(t=>({...t,chainLabel:c.name,chainColor:c.color}))];
+      if (chainTotal > 0) chainBreakdown.push({id:chainId,name:c.name,color:c.color,total:chainTotal,tokens:tokens.length});
+    }
+
+    setProgress(90);
+    allTokens.sort((a,b)=>(b.usd||0)-(a.usd||0));
+
+    document.getElementById('portValue').textContent = '$'+fmtUSD(totalUSD);
+    document.getElementById('stTokens').textContent = allTokens.length;
+    document.getElementById('tbTokens').textContent = allTokens.length;
+    document.getElementById('stNFTs').textContent = '—';
+    document.getElementById('stTxs').textContent = '—';
+
+    const chainCards = chainBreakdown.sort((a,b)=>b.total-a.total).map(c=>`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);">${c.name}</div>
+          <div style="font-size:11px;color:var(--muted);">$${fmtUSD(c.total)} · ${c.tokens} tokens</div>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('tab-tokens').innerHTML = `
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--amber);">
+      ⚡ Multi-chain scan — ${chainBreakdown.length} chains with activity · Powered by Covalent
+    </div>
+    ${chainBreakdown.length?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">${chainCards}</div>`:''}
+    <div class="token-list">
+      ${allTokens.length ? allTokens.map(t=>{
+        const logoHtml=t.logo?`<img src="${t.logo}" alt="${t.sym}" onerror="this.parentNode.innerHTML='<span style=\\"font-size:14px;font-weight:700;color:var(--muted);\\">${t.sym.charAt(0)}</span>'">`:`<span style="font-size:14px;font-weight:700;color:var(--muted);">${t.sym.charAt(0)}</span>`;
+        return `<div class="token-row">
+          <div class="token-logo">${logoHtml}</div>
+          <div class="token-info">
+            <div class="token-sym">${t.sym} <span style="font-size:9px;padding:2px 5px;border-radius:4px;background:var(--surface2);color:var(--dim);border:1px solid var(--border);">${t.chainLabel}</span></div>
+            <div class="token-name">${t.name}</div>
+          </div>
+          <div class="token-right">
+            <div class="token-usd">${t.usd!=null?'$'+fmtUSD(t.usd):'—'}</div>
+            <div class="token-bal">${fmtBal(t.bal)} ${t.sym}</div>
+          </div>
+        </div>`;
+      }).join('') : '<div class="empty"><div class="empty-icon">💰</div><div class="empty-title">No tokens found</div><p style="font-size:13px;color:var(--muted);">No balances found across scanned chains.</p></div>'}
+    </div>`;
+
+    document.getElementById('tab-nfts').innerHTML='<div class="empty"><div class="empty-icon">🖼️</div><div class="empty-title">Select a single chain for NFTs</div></div>';
+    document.getElementById('tab-txs').innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Select a single chain for transactions</div></div>';
+    renderWalletLabels(allTokens,[],[]);
+
+    setProgress(100);
+    setTimeout(()=>setProgress(0),600);
+  } catch(e) {
+    showErr('Multi-chain scan error: '+(e.message||'Unknown error'));
+    setProgress(0);
+  }
+  setBtnState(false);
+}
 
 // ── CHAIN ───────────────────────────────────────────────────────────
 function setChain(c, el) {
   chain = c;
   document.querySelectorAll('.chain-pill').forEach(p=>p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('stChain').textContent = CHAINS[c]?.sym || c.toUpperCase();
+  if (curAddr) lookup(curAddr);
+}
+
+function setChainMobile(c, el) {
+  chain = c;
+  document.querySelectorAll('.mobile-chain-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('stChain').textContent = CHAINS[c].sym;
+  // Sync desktop pills too
+  document.querySelectorAll('.chain-pill').forEach((p,i)=>{
+    const chains = Object.keys(CHAINS);
+    p.classList.toggle('active', chains[i] === c);
+  });
+  document.getElementById('stChain').textContent = CHAINS[c]?.sym || c.toUpperCase();
   if (curAddr) lookup(curAddr);
 }
 
@@ -507,6 +839,20 @@ async function lookup(addr) {
     ['tab-risk','tab-score','tab-resume','tab-exposure','tab-timeline','tab-chart','tab-defi'].forEach(id=>document.getElementById(id).innerHTML='');
     document.getElementById('walletLabelsSlot').innerHTML = '';
     setProgress(15);
+
+    // For Covalent-only chains use Covalent API
+    if (CHAINS[chain].covalentOnly) {
+      const tokens = await fetchTokensCovalent(address, CHAINS[chain].covalentId);
+      const totalUSD = tokens.reduce((a,t)=>a+(t.usd||0),0);
+      document.getElementById('portValue').textContent = '$'+fmtUSD(totalUSD);
+      renderTokens(tokens);
+      document.getElementById('stTokens').textContent = tokens.length;
+      document.getElementById('tbTokens').textContent = tokens.length;
+      document.getElementById('tab-nfts').innerHTML='<div class="empty"><div class="empty-icon">🖼️</div><div class="empty-title">NFTs available on ETH, Base & Polygon</div></div>';
+      document.getElementById('tab-txs').innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Transactions available on ETH, Base & Polygon</div></div>';
+      renderWalletLabels(tokens,[],[]);
+      setProgress(100); setTimeout(()=>setProgress(0),600); setBtnState(false); return;
+    }
 
     // Fetch prices and native balance immediately (fast)
     var [prices, nativeBal] = await Promise.all([
