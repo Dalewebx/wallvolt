@@ -1,5 +1,5 @@
-// GET /api/risk/:address
-// Returns approval risk analysis with contract intelligence
+// GET /api/risk?address=0x...&chain=eth
+// Approval risk analysis — free tier safe
 
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || 'g17rCrDbjWmGVYzGUzDYY';
 
@@ -25,6 +25,35 @@ async function alchemyRPC(method, params, network = 'eth-mainnet') {
   return data.result;
 }
 
+async function scanRecentLogs(address, topic, network, extraTopic = null) {
+  const ownerPadded = '0x000000000000000000000000' + address.slice(2).toLowerCase();
+  const topics = extraTopic
+    ? [topic, ownerPadded, null]
+    : [topic, ownerPadded, null];
+
+  try {
+    const currentBlockHex = await alchemyRPC('eth_blockNumber', [], network);
+    const currentBlock = parseInt(currentBlockHex, 16);
+    const CHUNK = 2000;
+    const LOOKBACK = 90000;
+    const startBlock = Math.max(0, currentBlock - LOOKBACK);
+    let logs = [];
+
+    for (let end = currentBlock; end > startBlock && logs.length < 40; end -= CHUNK) {
+      const start = Math.max(startBlock, end - CHUNK + 1);
+      try {
+        const chunk = await alchemyRPC('eth_getLogs', [{
+          fromBlock: '0x' + start.toString(16),
+          toBlock: '0x' + end.toString(16),
+          topics
+        }], network);
+        if (chunk?.length) logs = [...logs, ...chunk];
+      } catch { continue; }
+    }
+    return logs;
+  } catch { return []; }
+}
+
 async function checkGoPlus(address) {
   try {
     const res = await fetch(`https://api.gopluslabs.io/api/v1/address_security/${address}`);
@@ -35,31 +64,25 @@ async function checkGoPlus(address) {
 
 export default async function handler(req, res) {
   const { address, chain = 'eth' } = req.query;
-
   if (!address || !/^0x[0-9a-fA-F]{40}$/.test(address)) {
     return res.status(400).json({ error: 'Invalid wallet address' });
   }
 
   const network = chain === 'polygon' ? 'polygon-mainnet' : chain === 'base' ? 'base-mainnet' : 'eth-mainnet';
+  const approvalTopic = '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925';
+  const nftApprovalTopic = '0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31';
 
   try {
-    const ownerPadded = '0x000000000000000000000000' + address.slice(2).toLowerCase();
-
-    const [approvalLogs, nftApprovalLogs, goplusData] = await Promise.all([
-      alchemyRPC('eth_getLogs', [{
-        fromBlock: 'earliest', toBlock: 'latest',
-        topics: ['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925', ownerPadded, null]
-      }], network),
-      alchemyRPC('eth_getLogs', [{
-        fromBlock: 'earliest', toBlock: 'latest',
-        topics: ['0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31', ownerPadded, null]
-      }], network),
+    const [approvalLogs, nftLogs, goplusData] = await Promise.all([
+      scanRecentLogs(address, approvalTopic, network),
+      scanRecentLogs(address, nftApprovalTopic, network),
       checkGoPlus(address)
     ]);
 
-    // Parse ERC-20 approvals
     const seen = {};
     const approvals = [];
+
+    // Parse ERC-20 approvals
     for (const log of [...approvalLogs].reverse()) {
       if (!log.topics || log.topics.length < 3) continue;
       const spender = '0x' + log.topics[2].slice(26).toLowerCase();
@@ -87,7 +110,7 @@ export default async function handler(req, res) {
     }
 
     // Parse NFT approvals
-    for (const log of nftApprovalLogs) {
+    for (const log of nftLogs) {
       if (!log.topics || log.topics.length < 3) continue;
       const spender = '0x' + log.topics[2].slice(26).toLowerCase();
       const token = log.address.toLowerCase();
@@ -112,14 +135,14 @@ export default async function handler(req, res) {
     const safeApprovals = approvals.filter(a => a.riskLevel === 'safe');
 
     res.status(200).json({
-      address,
-      chain,
+      address, chain,
       summary: {
         total: approvals.length,
         high: highRisk.length,
         medium: mediumRisk.length,
         safe: safeApprovals.length,
-        overallRisk: highRisk.length > 0 ? 'high' : mediumRisk.length > 2 ? 'medium' : 'safe'
+        overallRisk: highRisk.length > 0 ? 'high' : mediumRisk.length > 2 ? 'medium' : 'safe',
+        note: 'Scans recent blocks only on free tier — upgrade Alchemy for full history'
       },
       approvals,
       walletFlags: {
@@ -133,6 +156,6 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Failed to analyse approvals' });
+    res.status(500).json({ error: err.message || 'Failed to analyse risk' });
   }
 }
