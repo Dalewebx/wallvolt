@@ -1,5 +1,5 @@
-// GET /api/approvals/:address
-// Returns all active token approvals with exposure calculation
+// GET /api/approvals?address=0x...&chain=eth
+// Approval exposure calculator — free tier safe
 
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || 'g17rCrDbjWmGVYzGUzDYY';
 const CG_BASE = 'https://api.coingecko.com/api/v3';
@@ -16,10 +16,9 @@ const KNOWN_SAFE = {
 };
 
 const PRICE_IDS = {
-  'USDC': 'usd-coin', 'USDT': 'tether', 'DAI': 'dai',
-  'WETH': 'ethereum', 'ETH': 'ethereum', 'WBTC': 'wrapped-bitcoin',
-  'LINK': 'chainlink', 'UNI': 'uniswap', 'AAVE': 'aave',
-  'MATIC': 'matic-network', 'WMATIC': 'matic-network',
+  'USDC':'usd-coin','USDT':'tether','DAI':'dai','WETH':'ethereum',
+  'ETH':'ethereum','WBTC':'wrapped-bitcoin','LINK':'chainlink',
+  'UNI':'uniswap','AAVE':'aave','MATIC':'matic-network','WMATIC':'matic-network',
 };
 
 async function alchemyRPC(method, params, network = 'eth-mainnet') {
@@ -33,23 +32,42 @@ async function alchemyRPC(method, params, network = 'eth-mainnet') {
   return data.result;
 }
 
+async function getRecentApprovalLogs(address, network) {
+  const ownerPadded = '0x000000000000000000000000' + address.slice(2).toLowerCase();
+  const approvalTopic = '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925';
+  try {
+    const currentBlockHex = await alchemyRPC('eth_blockNumber', [], network);
+    const currentBlock = parseInt(currentBlockHex, 16);
+    const CHUNK = 2000;
+    const LOOKBACK = 90000;
+    const startBlock = Math.max(0, currentBlock - LOOKBACK);
+    let logs = [];
+    for (let end = currentBlock; end > startBlock && logs.length < 40; end -= CHUNK) {
+      const start = Math.max(startBlock, end - CHUNK + 1);
+      try {
+        const chunk = await alchemyRPC('eth_getLogs', [{
+          fromBlock: '0x' + start.toString(16),
+          toBlock: '0x' + end.toString(16),
+          topics: [approvalTopic, ownerPadded, null]
+        }], network);
+        if (chunk?.length) logs = [...logs, ...chunk];
+      } catch { continue; }
+    }
+    return logs;
+  } catch { return []; }
+}
+
 export default async function handler(req, res) {
   const { address, chain = 'eth' } = req.query;
-
   if (!address || !/^0x[0-9a-fA-F]{40}$/.test(address)) {
     return res.status(400).json({ error: 'Invalid wallet address' });
   }
 
   const network = chain === 'polygon' ? 'polygon-mainnet' : chain === 'base' ? 'base-mainnet' : 'eth-mainnet';
-  const ownerPadded = '0x000000000000000000000000' + address.slice(2).toLowerCase();
 
   try {
-    // Fetch approvals and token balances in parallel
     const [approvalLogs, tokenData] = await Promise.all([
-      alchemyRPC('eth_getLogs', [{
-        fromBlock: 'earliest', toBlock: 'latest',
-        topics: ['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925', ownerPadded, null]
-      }], network),
+      getRecentApprovalLogs(address, network),
       alchemyRPC('alchemy_getTokensForOwner', [address, { withMetadata: true }], network)
         .catch(() => ({ tokens: [] }))
     ]);
@@ -66,14 +84,14 @@ export default async function handler(req, res) {
       }
     }
 
-    // Fetch prices for known tokens
+    // Fetch prices
     const symbols = [...new Set(Object.values(tokenBalanceMap).map(t => t.symbol).filter(s => PRICE_IDS[s]))];
     const cgIds = [...new Set(symbols.map(s => PRICE_IDS[s]).filter(Boolean))];
     let prices = {};
     if (cgIds.length > 0) {
       try {
-        const priceRes = await fetch(`${CG_BASE}/simple/price?ids=${cgIds.join(',')}&vs_currencies=usd`);
-        prices = await priceRes.json();
+        const r = await fetch(`${CG_BASE}/simple/price?ids=${cgIds.join(',')}&vs_currencies=usd`);
+        prices = await r.json();
       } catch {}
     }
 
@@ -82,7 +100,7 @@ export default async function handler(req, res) {
       return id && prices[id] ? prices[id].usd : null;
     }
 
-    // Parse active approvals
+    // Parse approvals
     const seen = {};
     const approvals = [];
     for (const log of [...approvalLogs].reverse()) {
@@ -92,17 +110,13 @@ export default async function handler(req, res) {
       const key = token + '_' + spender;
       if (seen[key]) continue;
       seen[key] = true;
-
       const amount = log.data && log.data !== '0x'
         ? BigInt('0x' + log.data.slice(2).padStart(64, '0'))
         : BigInt(0);
       if (amount === BigInt(0)) continue;
-
       const isUnlimited = amount >= BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff') / BigInt(2);
       const isKnown = !!KNOWN_SAFE[spender];
       const tokenInfo = tokenBalanceMap[token];
-
-      // Calculate exposure
       let exposureUSD = null;
       if (tokenInfo) {
         const price = getUSDPrice(tokenInfo.symbol);
@@ -111,47 +125,38 @@ export default async function handler(req, res) {
             exposureUSD = tokenInfo.balance * price;
           } else {
             const allowance = Number(amount) / Math.pow(10, tokenInfo.decimals || 18);
-            const actualExposure = Math.min(allowance, tokenInfo.balance);
-            exposureUSD = actualExposure * price;
+            exposureUSD = Math.min(allowance, tokenInfo.balance) * price;
           }
         }
       }
-
       const riskLevel = isUnlimited && !isKnown ? 'high' : isKnown && !isUnlimited ? 'safe' : 'medium';
-
       approvals.push({
-        token,
-        tokenSymbol: tokenInfo?.symbol || null,
+        token, tokenSymbol: tokenInfo?.symbol || null,
         tokenBalance: tokenInfo?.balance || null,
-        spender,
-        spenderName: KNOWN_SAFE[spender] || null,
-        isUnlimited,
-        isKnown,
-        riskLevel,
+        spender, spenderName: KNOWN_SAFE[spender] || null,
+        isUnlimited, isKnown, riskLevel,
         exposureUSD: exposureUSD ? parseFloat(exposureUSD.toFixed(2)) : null,
         blockNumber: parseInt(log.blockNumber, 16)
       });
     }
 
-    const totalExposureUSD = approvals.reduce((sum, a) => sum + (a.exposureUSD || 0), 0);
-    const highRiskExposure = approvals
-      .filter(a => a.riskLevel === 'high')
-      .reduce((sum, a) => sum + (a.exposureUSD || 0), 0);
+    const totalExposureUSD = approvals.reduce((s, a) => s + (a.exposureUSD || 0), 0);
+    const highRiskExposure = approvals.filter(a => a.riskLevel === 'high').reduce((s, a) => s + (a.exposureUSD || 0), 0);
 
     res.status(200).json({
-      address,
-      chain,
+      address, chain,
       summary: {
         totalApprovals: approvals.length,
         highRisk: approvals.filter(a => a.riskLevel === 'high').length,
         medium: approvals.filter(a => a.riskLevel === 'medium').length,
         safe: approvals.filter(a => a.riskLevel === 'safe').length,
         totalExposureUSD: parseFloat(totalExposureUSD.toFixed(2)),
-        highRiskExposureUSD: parseFloat(highRiskExposure.toFixed(2))
+        highRiskExposureUSD: parseFloat(highRiskExposure.toFixed(2)),
+        note: 'Scans recent blocks only on free tier'
       },
       approvals: approvals.sort((a, b) => {
-        const order = { high: 0, medium: 1, safe: 2 };
-        return order[a.riskLevel] - order[b.riskLevel];
+        const o = { high: 0, medium: 1, safe: 2 };
+        return o[a.riskLevel] - o[b.riskLevel];
       }),
       generatedAt: new Date().toISOString()
     });
