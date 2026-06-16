@@ -205,8 +205,90 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
   .nft-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
   footer{padding:16px;}
 }
+
+/* TRUST SCORE */
+.score-wrap{display:grid;grid-template-columns:200px 1fr;gap:20px;margin-bottom:20px;align-items:start;}
+.score-dial-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;}
+.score-circle{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;}
+.score-circle svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.score-num{font-family:'DM Serif Display',serif;font-size:38px;line-height:1;position:relative;z-index:1;}
+.score-label-sm{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);position:relative;z-index:1;}
+.score-verdict{font-family:'DM Serif Display',serif;font-size:16px;color:var(--text);margin-bottom:4px;}
+.score-signals{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.signal-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.signal-row:last-child{border-bottom:none;}
+.signal-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.signal-text{color:var(--muted);line-height:1.5;}
+.signal-row.pos .signal-text{color:#86EFAC;}
+.signal-row.neg .signal-text{color:#FCA5A5;}
+
+/* EXPOSURE */
+.exposure-hero{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.exposure-amount{font-family:'DM Serif Display',serif;font-size:42px;color:var(--danger);line-height:1;}
+.exposure-amount.safe{color:var(--ok);}
+.exposure-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.exposure-sub{font-size:13px;color:var(--muted);line-height:1.6;}
+.exposure-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:11px;margin-bottom:6px;}
+.exposure-row.high{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.04);}
+.exposure-token{flex:1;font-size:13px;font-weight:500;color:var(--text);}
+.exposure-spender{font-size:11px;color:var(--muted);margin-top:2px;}
+.exposure-usd{font-size:14px;font-weight:700;color:var(--danger);white-space:nowrap;}
+.exposure-usd.safe{color:var(--ok);}
+
+/* RESUME */
+.resume-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.resume-hero{background:linear-gradient(135deg,#0F1623,#162032);padding:28px;border-bottom:1px solid var(--border);}
+.resume-address{font-family:monospace;font-size:12px;color:var(--muted);margin-bottom:8px;}
+.resume-age{font-family:'DM Serif Display',serif;font-size:28px;color:var(--amber);margin-bottom:4px;}
+.resume-since{font-size:12px;color:var(--muted);}
+.resume-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1px;background:var(--border);}
+.resume-stat{background:var(--surface);padding:18px 20px;}
+.resume-stat-num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--text);}
+.resume-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+.resume-protocols{padding:18px 20px;border-top:1px solid var(--border);}
+.protocol-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--muted);margin:3px;}
+.share-resume-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--amber);color:#080C14;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;margin-top:16px;}
+.share-resume-btn:hover{background:var(--amber-dark);}
+
+/* TIMELINE */
+.timeline{padding:8px 0;}
+.timeline-year{margin-bottom:24px;display:flex;gap:16px;}
+.timeline-year-label{font-family:'DM Serif Display',serif;font-size:20px;color:var(--amber);width:48px;flex-shrink:0;padding-top:2px;}
+.timeline-events{flex:1;border-left:2px solid var(--border);padding-left:20px;display:flex;flex-direction:column;gap:10px;}
+.timeline-event{position:relative;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--muted);}
+.timeline-event::before{content:'';position:absolute;left:-27px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--amber);border:2px solid var(--bg);}
+.timeline-event-title{font-weight:500;color:var(--text);margin-bottom:2px;}
+.timeline-event-date{font-size:11px;color:var(--dim);}
+
+/* COMPARE */
+.compare-input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.compare-col{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.compare-col-hdr{padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-family:monospace;color:var(--muted);}
+.compare-col-hdr strong{display:block;font-family:'DM Serif Display',serif;font-size:16px;color:var(--text);font-weight:400;margin-bottom:2px;}
+.compare-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;}
+.compare-row:last-child{border-bottom:none;}
+.compare-row-label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;}
+.compare-row-val{font-weight:600;color:var(--text);}
+.compare-winner{color:var(--ok);}
+.compare-overlap{margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;}
+
+/* API DOCS */
+.api-wrap{max-width:720px;}
+.api-endpoint{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.api-endpoint-hdr{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;transition:background 0.15s;}
+.api-endpoint-hdr:hover{background:var(--surface2);}
+.api-method{background:rgba(34,197,94,0.15);color:var(--ok);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;font-family:monospace;}
+.api-path{font-family:monospace;font-size:13px;color:var(--text);}
+.api-desc{font-size:12px;color:var(--muted);margin-left:auto;}
+.api-body{display:none;padding:16px;border-top:1px solid var(--border);background:rgba(0,0,0,0.2);}
+.api-body.open{display:block;}
+.api-code{font-family:monospace;font-size:12px;color:#93C5FD;line-height:1.7;white-space:pre-wrap;word-break:break-all;}
+.api-try-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--amber);color:#080C14;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:12px;transition:all 0.15s;}
+.api-try-btn:hover{background:var(--amber-dark);}
 </style>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23080C14'/%3E%3Cpolygon points='19,3 10,18 16,18 13,29 22,14 16,14' fill='%23F59E0B'/%3E%3C/svg%3E"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23080C14'/><polygon points='62,8 35,52 50,52 38,92 70,45 55,45' fill='%23F59E0B' stroke='%23D97706' stroke-width='2'/></svg>"/>
+<link rel="alternate icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABjSURBVFhH7ZAxDoAgDEW/3sHEeBBPKAdxoTExMTEY4v0bxMRCgYQM8F/ykt/QEEIIcQJASimllB6ttVJKaa21lFJKKYQQQgghhBBCCPkDgCRJkiRJkiRJkiRJkiRJkiRJkuQAJpsIG4UAAAAASUVORK5CYII="/>
 </head>
 <body>
 
@@ -277,12 +359,22 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
     <div class="tab" onclick="switchTab('nfts',this)">NFTs <span class="tab-badge" id="tbNFTs">0</span></div>
     <div class="tab" onclick="switchTab('txs',this)">Transactions <span class="tab-badge" id="tbTxs">0</span></div>
     <div class="tab" onclick="switchTab('risk',this)">Risk Scan <span class="tab-badge" id="tbRisk" style="background:rgba(239,68,68,0.15);color:var(--danger);">—</span></div>
+    <div class="tab" onclick="switchTab('score',this)">Trust Score <span class="tab-badge" id="tbScore">—</span></div>
+    <div class="tab" onclick="switchTab('resume',this)">On-Chain Resume</div>
+    <div class="tab" onclick="switchTab('exposure',this)">Exposure</div>
+    <div class="tab" onclick="switchTab('timeline',this)">Timeline</div>
+    <div class="tab" onclick="switchTab('compare',this)">Compare</div>
   </div>
 
   <div class="tab-content active" id="tab-tokens"></div>
   <div class="tab-content" id="tab-nfts"></div>
   <div class="tab-content" id="tab-txs"></div>
   <div class="tab-content" id="tab-risk"></div>
+  <div class="tab-content" id="tab-score"></div>
+  <div class="tab-content" id="tab-resume"></div>
+  <div class="tab-content" id="tab-exposure"></div>
+  <div class="tab-content" id="tab-timeline"></div>
+  <div class="tab-content" id="tab-compare"></div>
 </div>
 
 <footer>
@@ -348,7 +440,7 @@ async function lookup(addr) {
     document.getElementById('portState').style.display = 'block';
 
     showSkeletons();
-    document.getElementById('tab-risk').innerHTML = '';
+    ['tab-risk','tab-score','tab-resume','tab-exposure','tab-timeline'].forEach(id=>document.getElementById(id).innerHTML='');
     document.getElementById('walletLabelsSlot').innerHTML = '';
     setProgress(15);
 
@@ -379,9 +471,10 @@ async function lookup(addr) {
     renderTokens(tokens);
     renderNFTs(nfts);
     renderTxs(txs, address);
+    buildTimeline(txs);
 
     // Render wallet labels into dedicated slot
-    document.getElementById('walletLabelsSlot').innerHTML = renderWalletLabels(tokens, nfts, txs);
+    renderWalletLabels(tokens, nfts, txs);
 
     setProgress(100);
     setTimeout(()=>setProgress(0), 600);
@@ -651,55 +744,67 @@ function showSkeletons() {
 function generateWalletLabels(tokens, nfts, txs) {
   var labels = [];
   var total = tokens.reduce((a,t)=>a+(t.usd||0),0);
-
-  // Portfolio size
-  if (total >= 1000000) labels.push({text:'🐋 Whale',cls:'wl-whale',tip:'Portfolio value over $1M'});
-  else if (total >= 100000) labels.push({text:'🦈 Large Holder',cls:'wl-whale',tip:'Portfolio value over $100K'});
-
-  // Stablecoin analysis
   var stableSyms = ['USDC','USDT','DAI','BUSD','FRAX','LUSD','TUSD','USDP'];
+  var defiSyms = ['UNI','AAVE','COMP','MKR','CRV','SNX','SUSHI','BAL','YFI','LDO','RPL'];
+  var now = Date.now();
+  var day = 86400000;
+
+  // ── RECENCY: classify txs by age ──────────────────────────────
+  var recent30  = txs.filter(t=>t.metadata?.blockTimestamp && (now - new Date(t.metadata.blockTimestamp).getTime()) < 30*day);
+  var recent90  = txs.filter(t=>t.metadata?.blockTimestamp && (now - new Date(t.metadata.blockTimestamp).getTime()) < 90*day);
+  var recentSends30 = recent30.filter(t=>t.dir==='send');
+  var recentSends90 = recent90.filter(t=>t.dir==='send');
+
+  // ── PORTFOLIO SIZE ─────────────────────────────────────────────
+  if (total >= 1000000) labels.push({text:'🐋 Whale',cls:'wl-whale',tip:'Portfolio value exceeds $1M'});
+  else if (total >= 100000) labels.push({text:'🦈 Large Holder',cls:'wl-whale',tip:'Portfolio value exceeds $100K'});
+
+  // ── STABLECOINS ────────────────────────────────────────────────
   var stableVal = tokens.filter(t=>stableSyms.includes((t.sym||'').toUpperCase())).reduce((a,t)=>a+(t.usd||0),0);
   var stablePct = total>0 ? stableVal/total : 0;
   if (stablePct >= 0.6) labels.push({text:'💵 Stablecoin Heavy',cls:'wl-stable',tip:`${Math.round(stablePct*100)}% of portfolio in stablecoins`});
 
-  // NFT exposure
-  var nftCount = nfts.length;
-  if (nftCount >= 50) labels.push({text:'🖼️ High NFT Exposure',cls:'wl-nft',tip:`Holds ${nftCount} NFTs`});
-  else if (nftCount >= 10) labels.push({text:'🖼️ NFT Collector',cls:'wl-nft',tip:`Holds ${nftCount} NFTs`});
+  // ── NFTs ───────────────────────────────────────────────────────
+  if (nfts.length >= 50) labels.push({text:'🖼️ High NFT Exposure',cls:'wl-nft',tip:`Holds ${nfts.length} NFTs`});
+  else if (nfts.length >= 10) labels.push({text:'🖼️ NFT Collector',cls:'wl-nft',tip:`Holds ${nfts.length} NFTs`});
 
-  // DeFi activity — check for known DeFi tokens
-  var defiSyms = ['UNI','AAVE','COMP','MKR','CRV','SNX','SUSHI','BAL','YFI','LDO','RPL'];
-  var hasDefi = tokens.some(t=>defiSyms.includes((t.sym||'').toUpperCase()));
-  var hasDefiTx = txs.some(t=>Object.values(KNOWN_SAFE).some(name=>name.includes('Uniswap')||name.includes('Aave')||name.includes('Compound')));
-  if (hasDefi || hasDefiTx) labels.push({text:'⚡ DeFi User',cls:'wl-defi',tip:'Holds DeFi governance tokens or has DeFi transaction history'});
+  // ── DeFi ───────────────────────────────────────────────────────
+  var hasDefiToken = tokens.some(t=>defiSyms.includes((t.sym||'').toUpperCase()));
+  if (hasDefiToken) labels.push({text:'⚡ DeFi User',cls:'wl-defi',tip:'Holds DeFi protocol tokens'});
 
-  // Token diversification
-  var nonStableTokens = tokens.filter(t=>!stableSyms.includes((t.sym||'').toUpperCase())&&!t.isNative);
-  if (nonStableTokens.length <= 2 && total > 1000) labels.push({text:'📉 Low Diversification',cls:'wl-low',tip:'Holdings concentrated in few assets'});
-  else if (nonStableTokens.length >= 15) labels.push({text:'🌐 Highly Diversified',cls:'wl-defi',tip:`Holds ${nonStableTokens.length} different tokens`});
+  // ── ACTIVE TRADER — must have 5+ sends in last 30 days ────────
+  if (recentSends30.length >= 5) labels.push({text:'📊 Active Trader',cls:'wl-trader',tip:`${recentSends30.length} outbound transactions in the last 30 days`});
+  else if (recentSends90.length >= 10) labels.push({text:'📊 Occasional Trader',cls:'wl-trader',tip:`${recentSends90.length} outbound transactions in the last 90 days`});
 
-  // Trading activity
-  var sends = txs.filter(t=>t.dir==='send').length;
-  if (sends >= 8) labels.push({text:'📊 Active Trader',cls:'wl-trader',tip:'High outbound transaction count'});
+  // ── DORMANT — no activity in 60+ days ─────────────────────────
+  var lastTxTime = txs.length ? Math.max(...txs.filter(t=>t.metadata?.blockTimestamp).map(t=>new Date(t.metadata.blockTimestamp).getTime())) : 0;
+  var daysSinceLast = lastTxTime ? Math.floor((now - lastTxTime) / day) : null;
+  if (daysSinceLast !== null && daysSinceLast >= 60) labels.push({text:`💤 Dormant (${daysSinceLast}d)`,cls:'wl-low',tip:`No activity for ${daysSinceLast} days`});
 
-  // New wallet (few txs)
-  if (txs.length <= 3 && total < 10000) labels.push({text:'🌱 New Wallet',cls:'wl-new',tip:'Low transaction history'});
+  // ── DIVERSIFICATION ────────────────────────────────────────────
+  var nonStable = tokens.filter(t=>!stableSyms.includes((t.sym||'').toUpperCase())&&!t.isNative);
+  if (nonStable.length >= 15) labels.push({text:'🌐 Highly Diversified',cls:'wl-defi',tip:`Holds ${nonStable.length} different tokens`});
+  else if (nonStable.length <= 1 && total > 5000) labels.push({text:'📉 Low Diversification',cls:'wl-low',tip:'Portfolio concentrated in one or two assets'});
 
-  // ETH maxi
-  var ethVal = tokens.find(t=>t.isNative)?.usd || 0;
+  // ── NEW WALLET ─────────────────────────────────────────────────
+  if (txs.length <= 5 && total < 5000) labels.push({text:'🌱 New Wallet',cls:'wl-new',tip:'Low activity and balance — likely a new or unused wallet'});
+
+  // ── ETH MAXI ──────────────────────────────────────────────────
+  var ethVal = tokens.find(t=>t.isNative)?.usd||0;
   var ethPct = total>0 ? ethVal/total : 0;
-  if (ethPct >= 0.85 && total > 5000) labels.push({text:'⟠ ETH Maxi',cls:'wl-defi',tip:`${Math.round(ethPct*100)}% of portfolio in ETH`});
+  if (ethPct >= 0.85 && total > 5000) labels.push({text:'⟠ ETH Maxi',cls:'wl-defi',tip:`${Math.round(ethPct*100)}% of portfolio is ETH`});
 
   return labels;
 }
 
 function renderWalletLabels(tokens, nfts, txs) {
+  var slot = document.getElementById('walletLabelsSlot');
+  if (!slot) return;
   var labels = generateWalletLabels(tokens, nfts, txs);
-  if (!labels.length) return '';
-  return `<div style="padding:0 32px 18px;">
+  slot.innerHTML = labels.length ? `<div style="padding:0 32px 18px;">
     <div class="label-section-title" style="margin-bottom:8px;">Wallet Intelligence</div>
     <div class="wallet-labels">${labels.map(l=>`<div class="wallet-label ${l.cls}" title="${l.tip}">${l.text}</div>`).join('')}</div>
-  </div>`;
+  </div>` : '';
 }
 
 // ── SUSPICIOUS CONTRACT DETECTION ────────────────────────────────────
@@ -1148,16 +1253,322 @@ function renderRisk(approvals, address) {
 
 
 
+// ── TRUST SCORE ───────────────────────────────────────────────────────
+async function runTrustScore(address) {
+  document.getElementById('tab-score').innerHTML =
+    '<div class="sk" style="height:200px;border-radius:14px;margin-bottom:12px;"></div>' +
+    '<div class="sk" style="height:300px;border-radius:14px;"></div>';
+  try {
+    const res = await fetch(`/api/score?address=${address}&chain=${chain}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const color = data.score >= 75 ? 'var(--ok)' : data.score >= 50 ? 'var(--amber)' : 'var(--danger)';
+    const r = 54; const circ = 2 * Math.PI * r;
+    const dash = (data.score / 100) * circ;
+
+    document.getElementById('tbScore').textContent = data.score;
+    document.getElementById('tab-score').innerHTML = `
+    <div class="score-wrap">
+      <div>
+        <div class="score-dial-wrap">
+          <div class="score-circle">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--border)" stroke-width="8"/>
+              <circle cx="60" cy="60" r="${r}" fill="none" stroke="${color}" stroke-width="8"
+                stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round"/>
+            </svg>
+            <div class="score-num" style="color:${color};">${data.score}</div>
+            <div class="score-label-sm">/ 100</div>
+          </div>
+          <div class="score-verdict">${data.label}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">${data.chain.toUpperCase()} · ${new Date(data.generatedAt).toLocaleDateString()}</div>
+        </div>
+        <div style="margin-top:10px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--muted);line-height:1.6;">
+          <strong style="color:var(--text);display:block;margin-bottom:4px;">What is Trust Score?</strong>
+          A composite score based on wallet age, transaction history, protocol interactions, and approval risk. Used by OTC traders, DAOs, and researchers to evaluate wallet credibility.
+        </div>
+      </div>
+      <div class="score-signals">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Score Breakdown</div>
+        ${data.positives.map(p => `<div class="signal-row pos"><span class="signal-icon">✓</span><span class="signal-text">${p}</span></div>`).join('')}
+        ${data.negatives.map(n => `<div class="signal-row neg"><span class="signal-icon">✗</span><span class="signal-text">${n}</span></div>`).join('')}
+        ${data.positives.length === 0 && data.negatives.length === 0 ? '<div class="signal-row"><span class="signal-text">Insufficient data to generate detailed breakdown.</span></div>' : ''}
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          ${[
+            ['Transactions', data.meta.txCount.toLocaleString()],
+            ['ETH Balance', data.meta.balanceEth + ' ETH'],
+            ['Total Approvals', data.meta.totalApprovals],
+            ['High Risk Approvals', data.meta.unlimitedUnknownApprovals],
+            ['Known Protocol Approvals', data.meta.knownProtocolApprovals],
+          ].map(([l,v]) => `<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">${l}</div><div style="font-size:14px;font-weight:600;color:var(--text);margin-top:2px;">${v}</div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--amber);line-height:1.6;">
+      ⚡ <strong>API Access:</strong> Integrate this score into your app — <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">GET /api/score?address=${address}&chain=${chain}</code>
+    </div>`;
+  } catch(e) {
+    document.getElementById('tab-score').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Score unavailable</div><p style="font-size:13px;">${e.message}</p></div>`;
+  }
+}
+
+// ── EXPOSURE ANALYSIS ─────────────────────────────────────────────────
+async function runExposure(address) {
+  document.getElementById('tab-exposure').innerHTML =
+    '<div class="sk" style="height:120px;border-radius:14px;margin-bottom:12px;"></div>' +
+    Array(4).fill('<div class="sk" style="height:60px;border-radius:11px;margin-bottom:6px;"></div>').join('');
+  try {
+    const res = await fetch(`/api/approvals?address=${address}&chain=${chain}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const totalExp = data.summary.totalExposureUSD;
+    const highExp = data.summary.highRiskExposureUSD;
+    const isClean = highExp === 0;
+
+    document.getElementById('tab-exposure').innerHTML = `
+    <div class="exposure-hero">
+      <div>
+        <div class="exposure-amount ${isClean?'safe':''}">$${totalExp.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="exposure-label">Total Approval Exposure</div>
+      </div>
+      <div style="border-left:1px solid var(--border);padding-left:20px;">
+        <div class="exposure-amount ${isClean?'safe':''}" style="font-size:28px;">$${highExp.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="exposure-label">High Risk Exposure</div>
+      </div>
+      <div style="flex:1;font-size:13px;color:var(--muted);line-height:1.65;border-left:1px solid var(--border);padding-left:20px;">
+        ${isClean
+          ? '✓ No high-risk exposure detected. All approvals are to verified protocols or have limited allowances.'
+          : `If the high-risk spender contracts above became malicious, up to <strong style="color:var(--danger);">$${highExp.toLocaleString()}</strong> of your tokens could be drained without any further action from you.`}
+      </div>
+    </div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">${data.summary.totalApprovals} Active Approvals</div>
+    ${data.approvals.length === 0
+      ? '<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">No active approvals</div><p style="font-size:13px;color:var(--muted);">This wallet has no active token approvals.</p></div>'
+      : data.approvals.map(a => `
+        <div class="exposure-row ${a.riskLevel==='high'?'high':''}">
+          <div style="flex:1;">
+            <div class="exposure-token">${a.tokenSymbol||a.token.slice(0,8)+'...'} ${a.isUnlimited?'<span style="font-size:10px;color:var(--danger);font-weight:700;">∞ UNLIMITED</span>':''}</div>
+            <div class="exposure-spender">Spender: ${a.spenderName||a.spender.slice(0,10)+'...'} ${a.riskLevel==='high'?'⚠ Unverified':a.riskLevel==='safe'?'✓ Verified':''}</div>
+          </div>
+          <div class="exposure-usd ${a.riskLevel==='safe'?'safe':''}">${a.exposureUSD!=null?'$'+a.exposureUSD.toLocaleString():'—'}</div>
+        </div>`).join('')}
+    <div style="margin-top:14px;padding:12px 16px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;font-size:12px;color:var(--amber);">
+      ⚡ <strong>API:</strong> <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">GET /api/approvals?address=${address}&chain=${chain}</code>
+    </div>`;
+  } catch(e) {
+    document.getElementById('tab-exposure').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Exposure data unavailable</div><p style="font-size:13px;">${e.message}</p></div>`;
+  }
+}
+
+// ── ON-CHAIN RESUME ───────────────────────────────────────────────────
+async function runResume(address) {
+  document.getElementById('tab-resume').innerHTML =
+    '<div class="sk" style="height:160px;border-radius:14px;margin-bottom:12px;"></div>' +
+    '<div class="sk" style="height:200px;border-radius:14px;"></div>';
+  try {
+    const res = await fetch(`/api/resume?address=${address}&chain=${chain}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    const r = data.resume;
+
+    document.getElementById('tab-resume').innerHTML = `
+    <div class="resume-card">
+      <div class="resume-hero">
+        <div class="resume-address">${address}</div>
+        <div class="resume-age">${r.walletAge ? r.walletAge.years+' years on-chain' : 'Wallet age unknown'}</div>
+        <div class="resume-since">${r.walletAge ? 'First seen '+r.walletAge.firstSeen+' · Last active '+r.walletAge.lastActive : ''}</div>
+        ${r.walletAge?.daysSinceActive > 30 ? `<div style="margin-top:8px;font-size:12px;color:var(--amber);">💤 Dormant for ${r.walletAge.daysSinceActive} days</div>` : ''}
+      </div>
+      <div class="resume-grid">
+        ${[
+          [r.activity.totalTransactions.toLocaleString(), 'Total Transactions'],
+          [r.activity.uniqueCounterparties.toLocaleString(), 'Unique Counterparties'],
+          [r.holdings.tokenCount, 'Tokens Held'],
+          [r.holdings.nftCount.toLocaleString(), 'NFTs Held'],
+          [r.holdings.nativeBalance+' '+r.holdings.nativeSymbol, 'Native Balance'],
+          [r.protocols.length || '—', 'Protocols Used'],
+        ].map(([v,l]) => `<div class="resume-stat"><div class="resume-stat-num">${v}</div><div class="resume-stat-label">${l}</div></div>`).join('')}
+      </div>
+      ${r.protocols.length ? `
+      <div class="resume-protocols">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Protocols Interacted With</div>
+        ${r.protocols.map(p=>`<span class="protocol-chip">✓ ${p}</span>`).join('')}
+      </div>` : ''}
+      ${r.holdings.topTokens.length ? `
+      <div class="resume-protocols" style="border-top:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Top Holdings</div>
+        ${r.holdings.topTokens.map(t=>`<span class="protocol-chip">${t.symbol} · ${parseFloat(parseFloat(t.balance).toFixed(4))}</span>`).join('')}
+      </div>` : ''}
+    </div>
+    <button class="share-resume-btn" onclick="shareResume('${address}')">📋 Copy Resume Link</button>
+    <div style="margin-top:14px;padding:12px 16px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;font-size:12px;color:var(--amber);">
+      ⚡ <strong>API:</strong> <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">GET /api/resume?address=${address}&chain=${chain}</code>
+    </div>`;
+  } catch(e) {
+    document.getElementById('tab-resume').innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Resume unavailable</div><p style="font-size:13px;">${e.message}</p></div>`;
+  }
+}
+
+function shareResume(address) {
+  var url = location.origin + '/?address=' + address + '&chain=' + chain + '&tab=resume';
+  navigator.clipboard?.writeText(url).then(() => {
+    var btn = document.querySelector('.share-resume-btn');
+    if (btn) { btn.textContent = '✓ Link copied!'; setTimeout(() => btn.textContent = '📋 Copy Resume Link', 2000); }
+  });
+}
+
+// ── WALLET TIMELINE ───────────────────────────────────────────────────
+function buildTimeline(txs) {
+  if (!txs.length) {
+    document.getElementById('tab-timeline').innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No timeline data</div><p style="font-size:13px;color:var(--muted);">No transactions found to build a timeline.</p></div>';
+    return;
+  }
+
+  // Group transactions by year
+  const byYear = {};
+  for (const tx of txs) {
+    const ts = tx.metadata?.blockTimestamp;
+    if (!ts) continue;
+    const year = new Date(ts).getFullYear();
+    if (!byYear[year]) byYear[year] = [];
+    byYear[year].push(tx);
+  }
+
+  // Generate meaningful events per year
+  const html = Object.entries(byYear).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).map(([year, ytxs]) => {
+    const sends = ytxs.filter(t=>t.dir==='send');
+    const receives = ytxs.filter(t=>t.dir==='receive');
+    const nftTxs = ytxs.filter(t=>t.category==='erc721');
+    const erc20Txs = ytxs.filter(t=>t.category==='erc20');
+    const events = [];
+
+    if (year === Object.keys(byYear).sort()[0]) {
+      events.push({ title: 'Wallet first active', date: new Date(ytxs[0].metadata?.blockTimestamp).toLocaleDateString('en-GB',{month:'short',year:'numeric'}) });
+    }
+    if (receives.length > 0) events.push({ title: `Received ${receives.length} transaction${receives.length>1?'s':''}`, date: year });
+    if (sends.length > 5) events.push({ title: `High activity period (${sends.length} outbound txs)`, date: year });
+    if (erc20Txs.length > 0) events.push({ title: `DeFi/token activity — ${erc20Txs.length} ERC-20 transfer${erc20Txs.length>1?'s':''}`, date: year });
+    if (nftTxs.length > 0) events.push({ title: `NFT activity — ${nftTxs.length} NFT transfer${nftTxs.length>1?'s':''}`, date: year });
+    if (events.length === 0) events.push({ title: `${ytxs.length} transaction${ytxs.length>1?'s':''}`, date: year });
+
+    return `<div class="timeline-year">
+      <div class="timeline-year-label">${year}</div>
+      <div class="timeline-events">
+        ${events.map(e=>`<div class="timeline-event">
+          <div class="timeline-event-title">${e.title}</div>
+          ${e.date !== year ? `<div class="timeline-event-date">${e.date}</div>` : ''}
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('tab-timeline').innerHTML = `
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;">Wallet History</div>
+    <div class="timeline">${html}</div>`;
+}
+
+// ── WALLET COMPARISON ─────────────────────────────────────────────────
+function renderCompareTab() {
+  document.getElementById('tab-compare').innerHTML = `
+  <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;">Compare Two Wallets</div>
+  <div class="compare-input-row">
+    <div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Wallet A</div>
+      <input class="search-input" id="cmpA" placeholder="0x... or ENS" style="font-size:13px;padding:10px 14px;"/>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Wallet B</div>
+      <input class="search-input" id="cmpB" placeholder="0x... or ENS" style="font-size:13px;padding:10px 14px;"/>
+    </div>
+  </div>
+  <button class="search-btn" style="width:100%;margin-bottom:20px;" onclick="runComparison()">Compare Wallets →</button>
+  <div id="compareResults"></div>`;
+}
+
+async function runComparison() {
+  const addrA = document.getElementById('cmpA').value.trim();
+  const addrB = document.getElementById('cmpB').value.trim();
+  if (!addrA || !addrB) { alert('Enter both wallet addresses.'); return; }
+
+  document.getElementById('compareResults').innerHTML =
+    '<div class="sk" style="height:300px;border-radius:14px;"></div>';
+
+  try {
+    const [scoreA, scoreB, resumeA, resumeB] = await Promise.all([
+      fetch(`/api/score?address=${addrA}&chain=${chain}`).then(r=>r.json()),
+      fetch(`/api/score?address=${addrB}&chain=${chain}`).then(r=>r.json()),
+      fetch(`/api/resume?address=${addrA}&chain=${chain}`).then(r=>r.json()),
+      fetch(`/api/resume?address=${addrB}&chain=${chain}`).then(r=>r.json()),
+    ]);
+
+    const rA = resumeA.resume; const rB = resumeB.resume;
+    const shortA = addrA.slice(0,6)+'...'+addrA.slice(-4);
+    const shortB = addrB.slice(0,6)+'...'+addrB.slice(-4);
+
+    function winner(a, b) {
+      if (a > b) return ['compare-winner','',''];
+      if (b > a) return ['','compare-winner',''];
+      return ['','',''];
+    }
+
+    const rows = [
+      ['Trust Score', scoreA.score, scoreB.score, scoreA.score > scoreB.score],
+      ['Transactions', rA?.activity.totalTransactions||0, rB?.activity.totalTransactions||0, (rA?.activity.totalTransactions||0) > (rB?.activity.totalTransactions||0)],
+      ['Wallet Age (days)', rA?.walletAge?.days||0, rB?.walletAge?.days||0, (rA?.walletAge?.days||0) > (rB?.walletAge?.days||0)],
+      ['Tokens Held', rA?.holdings.tokenCount||0, rB?.holdings.tokenCount||0, false],
+      ['NFTs', rA?.holdings.nftCount||0, rB?.holdings.nftCount||0, false],
+      ['Protocols Used', rA?.protocols.length||0, rB?.protocols.length||0, (rA?.protocols.length||0) > (rB?.protocols.length||0)],
+      ['High Risk Approvals', scoreA.meta?.unlimitedUnknownApprovals||0, scoreB.meta?.unlimitedUnknownApprovals||0, (scoreA.meta?.unlimitedUnknownApprovals||0) < (scoreB.meta?.unlimitedUnknownApprovals||0)],
+    ];
+
+    document.getElementById('compareResults').innerHTML = `
+    <div class="compare-grid">
+      <div class="compare-col">
+        <div class="compare-col-hdr"><strong>${shortA}</strong>Wallet A</div>
+        ${rows.map(([label, valA, valB, aWins]) => `
+          <div class="compare-row">
+            <div class="compare-row-label">${label}</div>
+            <div class="compare-row-val ${aWins?'compare-winner':''}">${typeof valA==='number'?valA.toLocaleString():valA}</div>
+          </div>`).join('')}
+      </div>
+      <div class="compare-col">
+        <div class="compare-col-hdr"><strong>${shortB}</strong>Wallet B</div>
+        ${rows.map(([label, valA, valB, aWins]) => `
+          <div class="compare-row">
+            <div class="compare-row-label">${label}</div>
+            <div class="compare-row-val ${!aWins&&valA!==valB?'compare-winner':''}">${typeof valB==='number'?valB.toLocaleString():valB}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    ${rA?.protocols.length && rB?.protocols.length ? (() => {
+      const overlap = rA.protocols.filter(p=>rB.protocols.includes(p));
+      return overlap.length ? `<div class="compare-overlap" style="margin-top:12px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Shared Protocols (${overlap.length})</div>
+        ${overlap.map(p=>`<span class="protocol-chip">✓ ${p}</span>`).join('')}
+      </div>` : '';
+    })() : ''}`;
+  } catch(e) {
+    document.getElementById('compareResults').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Comparison failed</div><p style="font-size:13px;">${e.message}</p></div>`;
+  }
+}
+
+// ── WIRE INTO LOOKUP ──────────────────────────────────────────────────
 // ── UTILS ─────────────────────────────────────────────────────────────
 function switchTab(tab, el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
-  // Lazy-load risk scan when tab is first opened
-  if (tab==='risk' && curAddr && document.getElementById('tab-risk').innerHTML.trim()==='') {
-    runRiskScan(curAddr);
-  }
+  // Lazy-load tabs when first opened
+  if (!curAddr) return;
+  const empty = document.getElementById('tab-'+tab).innerHTML.trim() === '';
+  if (tab==='risk' && empty) runRiskScan(curAddr);
+  if (tab==='score' && empty) runTrustScore(curAddr);
+  if (tab==='exposure' && empty) runExposure(curAddr);
+  if (tab==='resume' && empty) runResume(curAddr);
+  if (tab==='compare') renderCompareTab();
 }
 
 function fmtUSD(n) {
