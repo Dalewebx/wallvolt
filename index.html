@@ -164,6 +164,33 @@ nav{padding:16px 32px;display:flex;align-items:center;justify-content:space-betw
 .revoke-btn:hover{background:var(--danger);color:white;}
 .view-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted);text-decoration:none;transition:all 0.15s;}
 .view-btn:hover{border-color:var(--amber);color:var(--amber);}
+/* SMART LABELS */
+.wallet-labels{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.wallet-label{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid;transition:all 0.15s;}
+.wl-defi{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.25);color:#93C5FD;}
+.wl-nft{background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.25);color:#C4B5FD;}
+.wl-stable{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.25);color:#86EFAC;}
+.wl-whale{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:var(--amber);}
+.wl-risk{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#FCA5A5;}
+.wl-low{background:rgba(100,116,139,0.1);border-color:rgba(100,116,139,0.2);color:var(--muted);}
+.wl-new{background:rgba(236,72,153,0.1);border-color:rgba(236,72,153,0.25);color:#F9A8D4;}
+.wl-trader{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.2);color:#FDE68A;}
+.label-section-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+
+/* ENHANCED RISK CARD */
+.risk-reasons{display:flex;flex-direction:column;gap:5px;margin:10px 0 12px;}
+.risk-reason{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);padding:5px 10px;background:rgba(0,0,0,0.15);border-radius:6px;}
+.risk-reason-icon{font-size:13px;flex-shrink:0;}
+.risk-reason.r-high{color:#FCA5A5;}
+.risk-reason.r-med{color:#FDE68A;}
+.risk-reason.r-ok{color:#86EFAC;}
+.contract-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.contract-chip{font-size:10px;padding:3px 8px;border-radius:5px;font-weight:600;border:1px solid;}
+.cc-danger{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);color:var(--danger);}
+.cc-warn{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.2);color:var(--amber);}
+.cc-ok{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);color:var(--ok);}
+.cc-muted{background:var(--surface2);border-color:var(--border);color:var(--muted);}
+
 .risk-tip{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);border-radius:10px;padding:14px 16px;font-size:13px;color:#93C5FD;line-height:1.65;margin-bottom:16px;}
 
 footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
@@ -235,7 +262,7 @@ footer{border-top:1px solid var(--border);padding:18px 32px;display:flex;align-i
     </div>
     <div class="port-value" id="portValue">—</div>
     <div class="port-value-label">Total Portfolio Value</div>
-    <div class="port-stats">
+    <div class="port-stats" id="port-stats-row">
       <div><div class="ps-num" id="stTokens">—</div><div class="ps-label">Tokens</div></div>
       <div><div class="ps-num" id="stNFTs">—</div><div class="ps-label">NFTs</div></div>
       <div><div class="ps-num" id="stTxs">—</div><div class="ps-label">Transactions</div></div>
@@ -349,6 +376,13 @@ async function lookup(addr) {
     renderTokens(tokens);
     renderNFTs(nfts);
     renderTxs(txs, address);
+
+    // Inject smart wallet labels under portfolio value
+    var labelsHtml = renderWalletLabels(tokens, nfts, txs);
+    if (labelsHtml) {
+      var statsRow = document.getElementById('port-stats-row');
+      if (statsRow) statsRow.insertAdjacentHTML('afterend', labelsHtml);
+    }
 
     setProgress(100);
     setTimeout(()=>setProgress(0), 600);
@@ -614,7 +648,278 @@ function showSkeletons() {
   });
 }
 
-// ── RISK SCAN ─────────────────────────────────────────────────────────
+// ── SMART WALLET LABELS ───────────────────────────────────────────────
+function generateWalletLabels(tokens, nfts, txs) {
+  var labels = [];
+  var total = tokens.reduce((a,t)=>a+(t.usd||0),0);
+
+  // Portfolio size
+  if (total >= 1000000) labels.push({text:'🐋 Whale',cls:'wl-whale',tip:'Portfolio value over $1M'});
+  else if (total >= 100000) labels.push({text:'🦈 Large Holder',cls:'wl-whale',tip:'Portfolio value over $100K'});
+
+  // Stablecoin analysis
+  var stableSyms = ['USDC','USDT','DAI','BUSD','FRAX','LUSD','TUSD','USDP'];
+  var stableVal = tokens.filter(t=>stableSyms.includes((t.sym||'').toUpperCase())).reduce((a,t)=>a+(t.usd||0),0);
+  var stablePct = total>0 ? stableVal/total : 0;
+  if (stablePct >= 0.6) labels.push({text:'💵 Stablecoin Heavy',cls:'wl-stable',tip:`${Math.round(stablePct*100)}% of portfolio in stablecoins`});
+
+  // NFT exposure
+  var nftCount = nfts.length;
+  if (nftCount >= 50) labels.push({text:'🖼️ High NFT Exposure',cls:'wl-nft',tip:`Holds ${nftCount} NFTs`});
+  else if (nftCount >= 10) labels.push({text:'🖼️ NFT Collector',cls:'wl-nft',tip:`Holds ${nftCount} NFTs`});
+
+  // DeFi activity — check for known DeFi tokens
+  var defiSyms = ['UNI','AAVE','COMP','MKR','CRV','SNX','SUSHI','BAL','YFI','LDO','RPL'];
+  var hasDefi = tokens.some(t=>defiSyms.includes((t.sym||'').toUpperCase()));
+  var hasDefiTx = txs.some(t=>Object.values(KNOWN_SAFE).some(name=>name.includes('Uniswap')||name.includes('Aave')||name.includes('Compound')));
+  if (hasDefi || hasDefiTx) labels.push({text:'⚡ DeFi User',cls:'wl-defi',tip:'Holds DeFi governance tokens or has DeFi transaction history'});
+
+  // Token diversification
+  var nonStableTokens = tokens.filter(t=>!stableSyms.includes((t.sym||'').toUpperCase())&&!t.isNative);
+  if (nonStableTokens.length <= 2 && total > 1000) labels.push({text:'📉 Low Diversification',cls:'wl-low',tip:'Holdings concentrated in few assets'});
+  else if (nonStableTokens.length >= 15) labels.push({text:'🌐 Highly Diversified',cls:'wl-defi',tip:`Holds ${nonStableTokens.length} different tokens`});
+
+  // Trading activity
+  var sends = txs.filter(t=>t.dir==='send').length;
+  if (sends >= 8) labels.push({text:'📊 Active Trader',cls:'wl-trader',tip:'High outbound transaction count'});
+
+  // New wallet (few txs)
+  if (txs.length <= 3 && total < 10000) labels.push({text:'🌱 New Wallet',cls:'wl-new',tip:'Low transaction history'});
+
+  // ETH maxi
+  var ethVal = tokens.find(t=>t.isNative)?.usd || 0;
+  var ethPct = total>0 ? ethVal/total : 0;
+  if (ethPct >= 0.85 && total > 5000) labels.push({text:'⟠ ETH Maxi',cls:'wl-defi',tip:`${Math.round(ethPct*100)}% of portfolio in ETH`});
+
+  return labels;
+}
+
+function renderWalletLabels(tokens, nfts, txs) {
+  var labels = generateWalletLabels(tokens, nfts, txs);
+  if (!labels.length) return '';
+  return `
+    <div style="margin-bottom:20px;">
+      <div class="label-section-title">Wallet Intelligence</div>
+      <div class="wallet-labels">
+        ${labels.map(l=>`<div class="wallet-label ${l.cls}" title="${l.tip}">${l.text}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ── SUSPICIOUS CONTRACT DETECTION ────────────────────────────────────
+async function analyseContract(address) {
+  // Fetch contract info: code (is it a contract?), tx count, creation block
+  var results = {
+    isContract: false,
+    isVerified: false,
+    isRecent: false,
+    lowInteraction: false,
+    txCount: 0,
+    age: null,
+    reasons: []
+  };
+
+  try {
+    // Check if address has code (is a contract vs EOA)
+    var code = await rpc('eth_getCode', [address, 'latest']);
+    results.isContract = code && code !== '0x' && code.length > 2;
+
+    if (!results.isContract) {
+      results.reasons.push({icon:'✓', text:'Externally owned account (not a contract)', cls:'r-ok'});
+      return results;
+    }
+
+    // Get transaction count to measure interaction level
+    var txCountHex = await rpc('eth_getTransactionCount', [address, 'latest']);
+    results.txCount = parseInt(txCountHex, 16);
+
+    // Check interaction level
+    if (results.txCount < 10) {
+      results.lowInteraction = true;
+      results.reasons.push({icon:'⚠', text:`Very low interaction count (${results.txCount} txs) — few wallets have used this contract`, cls:'r-high'});
+    } else if (results.txCount < 100) {
+      results.reasons.push({icon:'⚡', text:`Limited interaction (${results.txCount} txs) — relatively new or niche contract`, cls:'r-med'});
+    } else {
+      results.reasons.push({icon:'✓', text:`High interaction count (${results.txCount.toLocaleString()} txs) — widely used contract`, cls:'r-ok'});
+    }
+
+    // Check if in known safe list
+    var knownName = KNOWN_SAFE[address.toLowerCase()];
+    if (knownName) {
+      results.isVerified = true;
+      results.reasons.push({icon:'✓', text:`Verified protocol: ${knownName}`, cls:'r-ok'});
+    } else {
+      results.reasons.push({icon:'⚠', text:'Contract not in verified protocol list — treat with caution', cls:'r-med'});
+    }
+
+    // Check recent deployment via first tx block
+    try {
+      var logs = await rpc('eth_getLogs', [{
+        fromBlock:'earliest', toBlock:'latest',
+        address: address, limit: 1
+      }]);
+      if (logs && logs.length > 0) {
+        var firstBlock = parseInt(logs[0].blockNumber, 16);
+        var currentBlock = parseInt(await rpc('eth_blockNumber',[]), 16);
+        var blocksAge = currentBlock - firstBlock;
+        var daysAge = Math.round(blocksAge * 12 / 86400); // ~12s per block
+        results.age = daysAge;
+        if (daysAge < 30) {
+          results.isRecent = true;
+          results.reasons.push({icon:'🔴', text:`Recently deployed (~${daysAge} days ago) — new contracts carry higher risk`, cls:'r-high'});
+        } else if (daysAge < 180) {
+          results.reasons.push({icon:'⚡', text:`Deployed ~${daysAge} days ago — relatively new contract`, cls:'r-med'});
+        } else {
+          results.reasons.push({icon:'✓', text:`Established contract (~${Math.round(daysAge/30)} months old)`, cls:'r-ok'});
+        }
+      }
+    } catch {}
+
+  } catch(e) {
+    results.reasons.push({icon:'?', text:'Could not fully analyse contract — proceed with caution', cls:'r-med'});
+  }
+
+  return results;
+}
+
+async function renderRisk(approvals, address) {
+  // Analyse each spender contract
+  var analysed = [];
+  for (var a of approvals.slice(0,10)) { // limit to 10 to avoid rate limits
+    var analysis = await analyseContract(a.spender);
+    analysed.push({...a, analysis});
+  }
+  // Add any remaining without analysis
+  for (var a of approvals.slice(10)) {
+    analysed.push({...a, analysis:null});
+  }
+
+  var high = analysed.filter(a=>getFullRisk(a)==='high').length;
+  var medium = analysed.filter(a=>getFullRisk(a)==='medium').length;
+  var safe = analysed.filter(a=>getFullRisk(a)==='safe').length;
+  var total = analysed.length;
+
+  var overallRisk = high>0?'high':medium>2?'medium':'safe';
+  var riskLabel = high>0?'High Risk Detected':medium>2?'Moderate Risk':'Looking Good';
+  var riskSub = high>0
+    ? `${high} approval${high>1?'s':''} granted to suspicious contracts. Review and revoke immediately.`
+    : medium>0
+    ? `${medium} approval${medium>1?'s':''} worth reviewing. No critical threats detected.`
+    : total===0
+    ? 'No active approvals. Clean wallet.'
+    : 'All approvals appear to be from verified protocols.';
+
+  var scoreNum = high>0 ? Math.max(15,100-high*25-medium*8) : medium>0 ? Math.min(82,100-medium*8) : 98;
+
+  document.getElementById('tbRisk').textContent = high>0?high+'⚠':total||'✓';
+
+  var html = `
+  <div class="risk-tip">
+    ℹ️ Token approvals allow smart contracts to spend your tokens. WallVolt analyses each spender contract for suspicious signals — recent deployment, low usage, unverified source, and unlimited spend permissions. Revoke anything you don't recognise.
+  </div>
+
+  <div class="risk-score-wrap">
+    <div class="risk-dial ${overallRisk}">
+      <div class="risk-score-num ${overallRisk}">${scoreNum}</div>
+      <div class="risk-score-label">/ 100</div>
+    </div>
+    <div class="risk-score-body">
+      <div class="risk-score-title">${riskLabel}</div>
+      <div class="risk-score-sub">${riskSub}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        ${high>0?`<span class="approval-risk-badge badge-high">🔴 ${high} High Risk</span>`:''}
+        ${medium>0?`<span class="approval-risk-badge badge-medium">⚡ ${medium} Review</span>`:''}
+        ${safe>0?`<span class="approval-risk-badge badge-safe">✓ ${safe} Safe</span>`:''}
+        ${total===0?`<span class="approval-risk-badge badge-safe">✓ No approvals</span>`:''}
+      </div>
+    </div>
+  </div>`;
+
+  if (total === 0) {
+    html += `<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Clean wallet</div><p style="font-size:13px;color:var(--muted);">No active token approvals found on ${CHAINS[chain].name}.</p></div>`;
+  } else {
+    var sorted = analysed.sort((a,b)=>{
+      var order={high:0,medium:1,safe:2};
+      return order[getFullRisk(a)]-order[getFullRisk(b)];
+    });
+
+    html += `<div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">${total} Active Approval${total!==1?'s':''}</div>`;
+    html += `<div class="approval-list">`;
+
+    for (var a of sorted) {
+      var risk = getFullRisk(a);
+      var knownName = KNOWN_SAFE[a.spender.toLowerCase()];
+      var shortToken = a.token.slice(0,8)+'...'+a.token.slice(-6);
+      var shortSpender = a.spender.slice(0,8)+'...'+a.spender.slice(-6);
+      var analysis = a.analysis;
+
+      // Build contract meta chips
+      var chips = '';
+      if (knownName) chips += `<span class="contract-chip cc-ok">✓ ${knownName}</span>`;
+      else chips += `<span class="contract-chip cc-danger">⚠ Unverified</span>`;
+      if (a.isUnlimited) chips += `<span class="contract-chip cc-danger">∞ Unlimited spend</span>`;
+      else chips += `<span class="contract-chip cc-ok">Limited allowance</span>`;
+      if (a.type==='NFT') chips += `<span class="contract-chip cc-warn">NFT Collection</span>`;
+      if (analysis?.isRecent) chips += `<span class="contract-chip cc-danger">🔴 Recently deployed</span>`;
+      if (analysis?.lowInteraction) chips += `<span class="contract-chip cc-warn">⚡ Low usage</span>`;
+      if (analysis?.txCount > 1000) chips += `<span class="contract-chip cc-ok">High usage</span>`;
+
+      html += `<div class="approval-card risk-${risk}">
+        <div class="approval-hdr">
+          <div class="approval-token">${a.type==='NFT'?'🖼️ NFT Approval':'🪙 Token Approval'}</div>
+          <span class="approval-risk-badge badge-${risk==='high'?'high':risk==='medium'?'medium':'safe'}">${risk==='high'?'🔴 High Risk':risk==='medium'?'⚡ Review':'✓ Safe'}</span>
+        </div>
+
+        <div class="contract-meta">${chips}</div>
+
+        <div class="approval-detail">
+          <div class="approval-detail-item">
+            <div class="approval-detail-label">Token Contract</div>
+            <div class="approval-detail-val">${shortToken}</div>
+          </div>
+          <div class="approval-detail-item">
+            <div class="approval-detail-label">Approved Spender</div>
+            <div class="approval-detail-val">${knownName||shortSpender}</div>
+          </div>
+          <div class="approval-detail-item">
+            <div class="approval-detail-label">Allowance</div>
+            <div class="approval-detail-val ${a.isUnlimited?'unlimited':''}">${a.isUnlimited?'Unlimited ∞':'Limited'}</div>
+          </div>
+          <div class="approval-detail-item">
+            <div class="approval-detail-label">Contract Txs</div>
+            <div class="approval-detail-val">${analysis?.txCount!=null?analysis.txCount.toLocaleString():'—'}</div>
+          </div>
+        </div>
+
+        ${analysis?.reasons?.length ? `
+        <div class="risk-reasons">
+          ${analysis.reasons.map(r=>`<div class="risk-reason ${r.cls}"><span class="risk-reason-icon">${r.icon}</span>${r.text}</div>`).join('')}
+        </div>` : ''}
+
+        <div class="approval-actions">
+          <a href="https://revoke.cash/address/${address}" target="_blank" class="revoke-btn">🔒 Revoke on Revoke.cash</a>
+          <a href="${CHAINS[chain].explorer}/address/${a.spender}" target="_blank" class="view-btn">↗ Spender</a>
+          <a href="${CHAINS[chain].explorer}/token/${a.token}" target="_blank" class="view-btn">↗ Token</a>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  document.getElementById('tab-risk').innerHTML = html;
+}
+
+function getFullRisk(a) {
+  var knownName = KNOWN_SAFE[a.spender.toLowerCase()];
+  var analysis = a.analysis;
+  var suspiciousSignals = (analysis?.isRecent?1:0) + (analysis?.lowInteraction?1:0) + (!knownName?1:0);
+  if (a.isUnlimited && suspiciousSignals >= 2) return 'high';
+  if (a.isUnlimited && !knownName) return 'high';
+  if (knownName && !a.isUnlimited) return 'safe';
+  if (knownName && a.isUnlimited) return 'medium';
+  if (suspiciousSignals >= 2) return 'medium';
+  return 'medium';
+}
 
 // Known safe protocols (lowercase)
 var KNOWN_SAFE = {
@@ -742,14 +1047,7 @@ function parseNFTApprovals(logs, address) {
   return approvals;
 }
 
-function scoreApproval(a) {
-  var spenderLow = a.spender.toLowerCase();
-  var isKnown = !!KNOWN_SAFE[spenderLow];
-  if (isKnown && !a.isUnlimited) return {level:'safe', label:'Safe', cls:'safe'};
-  if (isKnown && a.isUnlimited) return {level:'medium', label:'Review', cls:'medium'};
-  if (a.isUnlimited) return {level:'high', label:'High Risk', cls:'high'};
-  return {level:'medium', label:'Review', cls:'medium'};
-}
+
 
 function renderRisk(approvals, address) {
   var high = approvals.filter(a=>scoreApproval(a).level==='high').length;
@@ -852,14 +1150,7 @@ function renderRisk(approvals, address) {
   document.getElementById('tab-risk').innerHTML = html;
 }
 
-function renderRiskFallback(address) {
-  return `<div class="approval-card" style="text-align:center;padding:24px;">
-    <div style="font-size:32px;margin-bottom:12px;">🔍</div>
-    <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;">Check approvals on Revoke.cash</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">The most comprehensive approval checker. Paste your address to see and revoke all approvals.</div>
-    <a href="https://revoke.cash/address/${address}" target="_blank" class="revoke-btn" style="display:inline-flex;">Open Revoke.cash →</a>
-  </div>`;
-}
+
 
 // ── UTILS ─────────────────────────────────────────────────────────────
 function switchTab(tab, el) {
