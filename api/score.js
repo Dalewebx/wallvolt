@@ -1,7 +1,8 @@
-// GET /api/score/:address
-// Returns wallet trust score with positive and negative signals
+// GET /api/score?address=0x...&chain=eth
+// Wallet trust score — free tier safe (no eth_getLogs from earliest)
 
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || 'g17rCrDbjWmGVYzGUzDYY';
+
 const KNOWN_SAFE = {
   '0x000000000022d473030f116ddee9f6b43ac78ba3': 'Uniswap Permit2',
   '0xe592427a0aece92de3edee1f18e0157c05861564': 'Uniswap V3 Router',
@@ -25,9 +26,36 @@ async function alchemyRPC(method, params, network = 'eth-mainnet') {
   return data.result;
 }
 
+async function getRecentApprovals(address, network) {
+  const ownerPadded = '0x000000000000000000000000' + address.slice(2).toLowerCase();
+  const approvalTopic = '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925';
+
+  try {
+    const currentBlockHex = await alchemyRPC('eth_blockNumber', [], network);
+    const currentBlock = parseInt(currentBlockHex, 16);
+    // Scan last 90,000 blocks (~12 days) in 2000-block chunks
+    const CHUNK = 2000;
+    const LOOKBACK = 90000;
+    const startBlock = Math.max(0, currentBlock - LOOKBACK);
+    let logs = [];
+
+    for (let end = currentBlock; end > startBlock && logs.length < 40; end -= CHUNK) {
+      const start = Math.max(startBlock, end - CHUNK + 1);
+      try {
+        const chunk = await alchemyRPC('eth_getLogs', [{
+          fromBlock: '0x' + start.toString(16),
+          toBlock: '0x' + end.toString(16),
+          topics: [approvalTopic, ownerPadded, null]
+        }], network);
+        if (chunk?.length) logs = [...logs, ...chunk];
+      } catch { continue; }
+    }
+    return logs;
+  } catch { return []; }
+}
+
 export default async function handler(req, res) {
   const { address, chain = 'eth' } = req.query;
-
   if (!address || !/^0x[0-9a-fA-F]{40}$/.test(address)) {
     return res.status(400).json({ error: 'Invalid wallet address' });
   }
@@ -35,25 +63,22 @@ export default async function handler(req, res) {
   const network = chain === 'polygon' ? 'polygon-mainnet' : chain === 'base' ? 'base-mainnet' : 'eth-mainnet';
 
   try {
-    // Fetch data in parallel
-    const [txCountHex, balanceHex, approvalLogs] = await Promise.all([
+    const [txCountHex, balanceHex, recentTxs, approvalLogs] = await Promise.all([
       alchemyRPC('eth_getTransactionCount', [address, 'latest'], network),
       alchemyRPC('eth_getBalance', [address, 'latest'], network),
-      alchemyRPC('eth_getLogs', [{
-        fromBlock: 'earliest',
-        toBlock: 'latest',
-        topics: [
-          '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925',
-          '0x000000000000000000000000' + address.slice(2).toLowerCase(),
-          null
-        ]
-      }], network)
+      alchemyRPC('alchemy_getAssetTransfers', [{
+        fromBlock: '0x0', fromAddress: address,
+        category: ['external', 'erc20', 'erc721'],
+        maxCount: '0x64', order: 'desc'
+      }], network).catch(() => ({ transfers: [] })),
+      getRecentApprovals(address, network)
     ]);
 
     const txCount = parseInt(txCountHex, 16);
     const balanceEth = parseInt(balanceHex, 16) / 1e18;
+    const transfers = recentTxs?.transfers || [];
 
-    // Parse approvals
+    // Parse recent approvals
     const seen = {};
     const approvals = [];
     for (const log of [...approvalLogs].reverse()) {
@@ -72,70 +97,85 @@ export default async function handler(req, res) {
       approvals.push({ spender, token, isUnlimited, isKnown });
     }
 
+    // Detect known protocol interactions from transfer history
+    const protocolsUsed = new Set();
+    for (const tx of transfers) {
+      if (tx.to && KNOWN_SAFE[tx.to.toLowerCase()]) {
+        protocolsUsed.add(KNOWN_SAFE[tx.to.toLowerCase()]);
+      }
+    }
+
+    // Recent activity (last 30 days)
+    const now = Date.now();
+    const recent30 = transfers.filter(t =>
+      t.metadata?.blockTimestamp &&
+      now - new Date(t.metadata.blockTimestamp).getTime() < 30 * 86400000
+    );
+
     // Score calculation
-    let score = 50; // base
+    let score = 50;
     const positives = [];
     const negatives = [];
 
-    // Wallet age / activity
-    if (txCount >= 500) { score += 15; positives.push(`Very active wallet (${txCount.toLocaleString()} transactions)`); }
-    else if (txCount >= 100) { score += 10; positives.push(`Active wallet (${txCount.toLocaleString()} transactions)`); }
-    else if (txCount >= 20) { score += 5; positives.push(`Established wallet (${txCount.toLocaleString()} transactions)`); }
-    else if (txCount < 5) { score -= 5; negatives.push('Very low transaction count — new or rarely used wallet'); }
+    // Transaction history
+    if (txCount >= 500) { score += 15; positives.push(`Very active wallet (${txCount.toLocaleString()} lifetime transactions)`); }
+    else if (txCount >= 100) { score += 10; positives.push(`Active wallet (${txCount.toLocaleString()} lifetime transactions)`); }
+    else if (txCount >= 20)  { score += 5;  positives.push(`Established wallet (${txCount} transactions)`); }
+    else if (txCount < 5)   { score -= 5;  negatives.push('Very low transaction count — new or rarely used wallet'); }
 
-    // Known protocol interactions
-    const knownApprovals = approvals.filter(a => a.isKnown);
-    const unknownApprovals = approvals.filter(a => !a.isKnown);
-    const unlimitedUnknown = approvals.filter(a => a.isUnlimited && !a.isKnown);
-
-    if (knownApprovals.length > 0) {
-      score += Math.min(10, knownApprovals.length * 3);
-      positives.push(`Interacts with ${knownApprovals.length} verified protocol${knownApprovals.length > 1 ? 's' : ''}`);
+    // Protocol interactions
+    if (protocolsUsed.size > 0) {
+      score += Math.min(10, protocolsUsed.size * 3);
+      positives.push(`Interacts with verified protocols: ${Array.from(protocolsUsed).join(', ')}`);
     }
 
-    // Balance signals
-    if (balanceEth >= 10) { score += 8; positives.push('Significant ETH balance'); }
-    else if (balanceEth >= 1) { score += 4; positives.push('Holds meaningful ETH balance'); }
+    // ETH balance
+    if (balanceEth >= 10)   { score += 8; positives.push('Significant ETH balance'); }
+    else if (balanceEth >= 1){ score += 4; positives.push('Holds meaningful ETH balance'); }
     else if (balanceEth < 0.01 && txCount > 10) { score -= 3; negatives.push('Very low ETH balance relative to activity'); }
 
-    // Approval risks
+    // Recent activity
+    if (recent30.length >= 5) { score += 5; positives.push(`Recently active (${recent30.length} transactions in last 30 days)`); }
+    else if (txCount > 20 && recent30.length === 0) { score -= 3; negatives.push('No recent activity in last 30 days'); }
+
+    // Approval risks (from recent scan)
+    const unlimitedUnknown = approvals.filter(a => a.isUnlimited && !a.isKnown);
+    const knownApprovals = approvals.filter(a => a.isKnown);
+
     if (unlimitedUnknown.length === 0 && approvals.length > 0) {
-      score += 8; positives.push('No unlimited approvals to unverified contracts');
+      score += 5; positives.push('No unlimited approvals to unverified contracts (recent scan)');
+    }
+    if (knownApprovals.length > 0) {
+      score += Math.min(8, knownApprovals.length * 2);
+      positives.push(`${knownApprovals.length} approval${knownApprovals.length>1?'s':''} to verified protocols`);
     }
     if (unlimitedUnknown.length >= 3) {
       score -= 20; negatives.push(`${unlimitedUnknown.length} unlimited approvals to unverified contracts`);
     } else if (unlimitedUnknown.length > 0) {
-      score -= unlimitedUnknown.length * 6;
-      negatives.push(`${unlimitedUnknown.length} unlimited approval${unlimitedUnknown.length > 1 ? 's' : ''} to unverified contract${unlimitedUnknown.length > 1 ? 's' : ''}`);
-    }
-
-    if (unknownApprovals.length >= 5) {
-      score -= 5; negatives.push(`${unknownApprovals.length} approvals to unverified contracts`);
+      score -= unlimitedUnknown.length * 7;
+      negatives.push(`${unlimitedUnknown.length} unlimited approval${unlimitedUnknown.length>1?'s':''} to unverified contract${unlimitedUnknown.length>1?'s':''}`);
     }
 
     if (approvals.length === 0) {
-      score += 5; positives.push('No active token approvals — clean approval history');
+      positives.push('No recent approval events detected');
     }
 
     score = Math.max(0, Math.min(100, Math.round(score)));
-
     const level = score >= 75 ? 'trusted' : score >= 50 ? 'moderate' : 'caution';
     const label = score >= 75 ? 'Trusted Wallet' : score >= 50 ? 'Moderate Trust' : 'Use Caution';
 
     res.status(200).json({
-      address,
-      chain,
-      score,
-      level,
-      label,
-      positives,
-      negatives,
+      address, chain, score, level, label,
+      positives, negatives,
       meta: {
         txCount,
         balanceEth: parseFloat(balanceEth.toFixed(4)),
-        totalApprovals: approvals.length,
+        recentActivity: recent30.length,
+        protocolsDetected: Array.from(protocolsUsed),
+        recentApprovals: approvals.length,
         unlimitedUnknownApprovals: unlimitedUnknown.length,
-        knownProtocolApprovals: knownApprovals.length
+        knownProtocolApprovals: knownApprovals.length,
+        note: 'Approval scan covers recent blocks only on free tier'
       },
       generatedAt: new Date().toISOString()
     });
